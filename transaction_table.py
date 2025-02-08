@@ -124,11 +124,11 @@ class TransactionTable(QWidget):
         self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.table_widget.setMinimumWidth(800)
         header = self.table_widget.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.Interactive)
-        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(3, QHeaderView.Stretch)
+
+        self.table_widget.resizeColumnsToContents()
+        header.setStretchLastSection(True)
+        self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
         layout = QVBoxLayout(self)
         layout.addWidget(self.table_widget)
         self.setLayout(layout)

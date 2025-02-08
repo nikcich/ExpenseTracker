@@ -17,6 +17,8 @@ from radar import RadarChart
 from month_bar import MonthlyBarChart
 from tag_bar import TagBarChart
 from donut import DonutChart
+from heat import DailyHeatmapChart
+from month_stacked import MonthlyStackedBarChart
 
 os.environ['QT_API'] = 'pyqt5'
 
@@ -25,59 +27,33 @@ class App(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("File Upload Example")
-        self.setGeometry(300, 300, 800, 800)
+        self.setGeometry(300, 300, 1000, 800)
 
-        self.data_view_dock = GenericDockWidget("Data View", DataViewTab(self), self)
-        self.file_import_dock = GenericDockWidget("File Import", FileImportTab(self), self)
-        self.chart_pie = GenericDockWidget("Pie Chart", ChartWidget(PieChart(start, end), self), self)
-        self.chart_donut = GenericDockWidget("Donut Chart", ChartWidget(DonutChart(start, end), self), self)
-        self.chart_radar = GenericDockWidget("Radar Chart", ChartWidget(RadarChart(start, end), self), self)
-        self.chart_bar = GenericDockWidget("Tag Bar Chart", ChartWidget(TagBarChart(start, end), self), self)
-        self.chart_month_bar = GenericDockWidget("Monthly Bar Chart", ChartWidget(MonthlyBarChart(start, end), self), self)
+        docks = {
+            "Data View": GenericDockWidget("Data View", DataViewTab(self), self),
+            "File Import": GenericDockWidget("File Import", FileImportTab(self), self),
+            "Pie Chart": GenericDockWidget("Pie Chart", ChartWidget(PieChart(start, end), self), self),
+            "Donut Chart": GenericDockWidget("Donut Chart", ChartWidget(DonutChart(start, end), self), self),
+            "Radar Chart": GenericDockWidget("Radar Chart", ChartWidget(RadarChart(start, end), self), self),
+            "Tag Bar Chart": GenericDockWidget("Tag Bar Chart", ChartWidget(TagBarChart(start, end), self), self),
+            "Monthly Bar Chart": GenericDockWidget("Monthly Bar Chart", ChartWidget(MonthlyBarChart(start, end), self), self),
+            "Daily Heatmap": GenericDockWidget("Daily Heatmap", DailyHeatmapChart(start, end), self),
+            "Monthly Stacked By Tags": GenericDockWidget("Monthly Stacked By Tags", MonthlyStackedBarChart(start, end), self)
+        }
 
-
-        self.data_view_dock.closed.connect(self.on_dock_widget_closed)
-        self.file_import_dock.closed.connect(self.on_dock_widget_closed)
-        self.chart_pie.closed.connect(self.on_dock_widget_closed)
-        self.chart_donut.closed.connect(self.on_dock_widget_closed)
-        self.chart_radar.closed.connect(self.on_dock_widget_closed)
-        self.chart_bar.closed.connect(self.on_dock_widget_closed)
-        self.chart_month_bar.closed.connect(self.on_dock_widget_closed)
-
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.data_view_dock)
-        self.addDockWidget(Qt.TopDockWidgetArea, self.file_import_dock)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.chart_pie)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.chart_donut)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.chart_radar)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.chart_bar)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.chart_month_bar)
-
-        dock_widgets.set_data({
-            "Data View": self.data_view_dock,
-            "File Import": self.file_import_dock,
-            "Pie Chart": self.chart_pie,
-            "Donut Chart": self.chart_donut,
-            "Radar Chart": self.chart_radar,
-            "Tag Bar Chart": self.chart_bar,
-            "Monthly Bar Chart": self.chart_month_bar
-        })
-
-        self.create_menu_bar()
-        self.data_view_dock.close()
-        self.chart_pie.close()
-        self.chart_donut.close()
-        self.chart_radar.close()
-        self.chart_bar.close()
-        self.chart_month_bar.close()
-
-        self.data_view_dock.setFloating(True)
-        self.chart_pie.setFloating(True)
-        self.chart_donut.setFloating(True)
-        self.chart_radar.setFloating(True)
-        self.chart_bar.setFloating(True)
-        self.chart_month_bar.setFloating(True)
-
+        dock_widgets.set_data(docks)
         dock_widgets.add_observer(self.dock_widgets_change)
+        self.create_menu_bar()
+
+        default_open = ["File Import"]
+
+        for key in docks:
+            docks[key].closed.connect(self.on_dock_widget_closed)
+            if key not in default_open:
+                docks[key].close()
+                docks[key].setFloating(True)
+            self.addDockWidget(Qt.TopDockWidgetArea, docks[key])
+            
 
     def dock_widgets_change(self):
         view_menu = self.menuBar().findChild(QMenu, "View")

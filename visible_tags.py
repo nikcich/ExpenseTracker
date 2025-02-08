@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QLabel, QDialog, QVBoxLayout, QPushButton, QCheckBox, QListWidget, QListWidgetItem
-from tags import tags  # Assuming the 'tags' dictionary is imported
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QDialog, QVBoxLayout, QPushButton, QCheckBox, QListWidget, QListWidgetItem
+from tags import tags 
 from observable import Observable
 
 # Observable to store the selected tags
@@ -41,10 +41,39 @@ class TagSelectionDialog(QDialog):
         
         layout.addWidget(self.list_widget)
 
+        # Create a horizontal layout for the check/uncheck all buttons
+        button_layout = QHBoxLayout()
+
+        # Check All button
+        check_all_button = QPushButton("Check All", self)
+        check_all_button.clicked.connect(self.check_all)
+        button_layout.addWidget(check_all_button)
+
+        # Uncheck All button
+        uncheck_all_button = QPushButton("Uncheck All", self)
+        uncheck_all_button.clicked.connect(self.uncheck_all)
+        button_layout.addWidget(uncheck_all_button)
+
+        layout.addLayout(button_layout)
+
         # OK button to confirm selection
         ok_button = QPushButton("OK", self)
         ok_button.clicked.connect(self.handle_tag_selection)
         layout.addWidget(ok_button)
+
+    def check_all(self):
+        """Check all checkboxes"""
+        for index in range(self.list_widget.count()):
+            item = self.list_widget.item(index)
+            checkbox = self.list_widget.itemWidget(item)
+            checkbox.setChecked(True)
+
+    def uncheck_all(self):
+        """Uncheck all checkboxes"""
+        for index in range(self.list_widget.count()):
+            item = self.list_widget.item(index)
+            checkbox = self.list_widget.itemWidget(item)
+            checkbox.setChecked(False)
 
     def handle_tag_selection(self):
         """Handles the selected tags after pressing OK"""
