@@ -1,0 +1,4 @@
+from observable import Observable
+
+unsaved_changes = Observable()
+unsaved_changes.set_data(False)
