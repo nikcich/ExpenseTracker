@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
-from load_save_data import transactions_observable
-from visible_tags import visibleTags
+from utils.load_save_data import transactions_observable
+from observables.visible_tags import visibleTags
 from PyQt5.QtCore import QDate
 
 class TotalAmountLabel(QtWidgets.QWidget):
@@ -26,6 +26,8 @@ class TotalAmountLabel(QtWidgets.QWidget):
         # Add observer for transactions to update the label when data changes
         transactions_observable.add_observer(self.update_total_amount)
         visibleTags.add_observer(self.update_total_amount)
+        start_date.add_observer(self.update_total_amount)
+        end_date.add_observer(self.update_total_amount)
 
     def update_total_amount(self):
         # Get the list of transactions

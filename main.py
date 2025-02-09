@@ -1,24 +1,26 @@
-from file_import_tab import FileImportTab
-from data_view_tab import DataViewTab
+from widgets.file_import_tab import FileImportTab
+from widgets.data_view_tab import DataViewTab
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMessageBox, QMenu
 from PyQt5.QtCore import Qt
 import qdarkstyle
 import os
-from docking import GenericDockWidget
-from unsaved_changes import unsaved_changes
-from load_save_data import save_to_pickle_file
-from docks import dock_widgets
-from visible_tags import TagSelectionDialog
-from DateRangeFilters import DateRangeDialog, start, end
-from chart import ChartWidget
-from pie import PieChart
-from radar import RadarChart
-from month_bar import MonthlyBarChart
-from tag_bar import TagBarChart
-from donut import DonutChart
-from heat import DailyHeatmapChart
-from month_stacked import MonthlyStackedBarChart
+from custom_types.docking import GenericDockWidget
+from observables.unsaved_changes import unsaved_changes
+from utils.load_save_data import save_to_pickle_file
+from observables.docks import dock_widgets
+from observables.visible_tags import TagSelectionDialog
+from observables.DateRangeFilters import DateRangeDialog, start, end
+from custom_types.chart import ChartWidget
+from widgets.pie import PieChart
+from widgets.radar import RadarChart
+from widgets.month_bar import MonthlyBarChart
+from widgets.tag_bar import TagBarChart
+from widgets.donut import DonutChart
+from widgets.heat import DailyHeatmapChart
+from widgets.month_stacked import MonthlyStackedBarChart
+
+sys.path.append('./')
 
 os.environ['QT_API'] = 'pyqt5'
 
@@ -26,7 +28,7 @@ class App(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("File Upload Example")
+        self.setWindowTitle("Expense Tracker")
         self.setGeometry(300, 300, 1000, 800)
 
         docks = {

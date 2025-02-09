@@ -1,13 +1,13 @@
 from PyQt5 import QtWidgets, QtWebEngineWidgets
 import plotly.express as px
-from load_save_data import transactions_observable
+from utils.load_save_data import transactions_observable
 from PyQt5.QtCore import QDate
-from visible_tags import visibleTags
+from observables.visible_tags import visibleTags
 
-class PieChart(QtWidgets.QWidget):
+class DonutChart(QtWidgets.QWidget):
     def __init__(self, start, end):
         super().__init__()
-                
+
         # Create the QWebEngineView widget to display the chart
         self.browser = QtWebEngineWidgets.QWebEngineView(self)
         
@@ -19,7 +19,7 @@ class PieChart(QtWidgets.QWidget):
         self.end = end
         start.add_observer(self.onDateRangeChange)
         end.add_observer(self.onDateRangeChange)
-        
+
         self.resize(1000, 800)
         self.show_graph()
         transactions_observable.add_observer(self.show_graph)
@@ -79,12 +79,12 @@ class PieChart(QtWidgets.QWidget):
             self.browser.setHtml("<h1>No data available for the selected date range.</h1>")
             return
 
-        # Prepare data for the pie chart
+        # Prepare data for the donut chart
         tags = list(tag_amounts.keys())
         amounts = list(tag_amounts.values())
 
-        # Create the pie chart using Plotly
-        fig = px.pie(values=amounts, names=tags, title="Transaction Amounts by Tag", template="plotly_dark")
+        # Create the donut chart using Plotly
+        fig = px.pie(values=amounts, names=tags, title="Transaction Amounts by Tag", template="plotly_dark", hole=0.7)
         
         # Apply custom colors using the tag_colors dictionary
         fig.update_traces(marker=dict(colors=[tag_colors[tag] for tag in tags]))

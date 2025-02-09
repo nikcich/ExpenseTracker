@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QTableView, QListWidgetItem, QCheckBox, QListWidget, QDialog, QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QHeaderView, QLabel, QHBoxLayout, QSizePolicy, QPushButton, QMenu, QAction
 from PyQt5.QtCore import Qt, QDate
-from tags import tags
-from load_save_data import transactions_observable
-from unsaved_changes import unsaved_changes
+from custom_types.tags import tags
+from utils.load_save_data import transactions_observable
+from observables.unsaved_changes import unsaved_changes
 
 
 class CustomTableWidgetItem(QTableWidgetItem):

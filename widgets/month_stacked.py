@@ -1,10 +1,10 @@
 from PyQt5 import QtWidgets, QtWebEngineWidgets
 import plotly.graph_objects as go
-from load_save_data import transactions_observable
+from utils.load_save_data import transactions_observable
 from PyQt5.QtCore import QDate
-from visible_tags import visibleTags
+from observables.visible_tags import visibleTags
 
-class MonthlyBarChart(QtWidgets.QWidget):
+class MonthlyStackedBarChart(QtWidgets.QWidget):
     def __init__(self, start, end):
         super().__init__()
 
@@ -35,9 +35,8 @@ class MonthlyBarChart(QtWidgets.QWidget):
         startDate = self.start.get_data()
         endDate = self.end.get_data()
 
-        # Aggregate amounts by month
-        monthly_amounts = {}
-        no_tag_amount = 0  # To accumulate amounts for transactions with no tags
+        # Aggregate amounts by month and tag
+        monthly_tag_amounts = {}
         
         # Get the list of visible tags
         visible_tags = visibleTags.get_data()
@@ -49,55 +48,68 @@ class MonthlyBarChart(QtWidgets.QWidget):
 
             # Only include transactions within the date range
             if startDate <= transaction_date <= endDate:
+                # Get the year and month (e.g., '2025-02' for February 2025)
+                month_year = transaction_date.toString('yyyy-MM')
+                
+                # Initialize the dictionary for the month if not already present
+                if month_year not in monthly_tag_amounts:
+                    monthly_tag_amounts[month_year] = {tag: 0 for tag in visible_tags}
+                    monthly_tag_amounts[month_year]['No Tag'] = 0
+
                 # Check if the transaction has any visible tags
                 transaction_tags = [tag['tag_name'] for tag in transaction.tags]
 
                 if transaction_tags:
                     # If the transaction has tags, include only if at least one is visible
-                    if any(tag in visible_tags for tag in transaction_tags):
-                        # Get the year and month (e.g., '2025-02' for February 2025)
-                        month_year = transaction_date.toString('yyyy-MM')
-                        
-                        # Accumulate the amount for each month, rounded to the nearest cent
-                        if month_year not in monthly_amounts:
-                            monthly_amounts[month_year] = 0
-                        
-                        monthly_amounts[month_year] += round(transaction.amount, 2)
+                    for tag in transaction_tags:
+                        if tag in visible_tags:
+                            monthly_tag_amounts[month_year][tag] += transaction.amount
                 else:
                     # If the transaction has no tags, accumulate it in the "No Tag" category
-                    month_year = transaction_date.toString('yyyy-MM')
-                    no_tag_amount += round(transaction.amount, 2)
+                    monthly_tag_amounts[month_year]['No Tag'] += transaction.amount
 
-        # If there are any transactions with no tags, add them to the monthly amounts
-        if no_tag_amount > 0:
-            if 'No Tag' not in monthly_amounts:
-                monthly_amounts['No Tag'] = 0
-            # Add the "No Tag" amount to the months it applies to
-            monthly_amounts['No Tag'] += no_tag_amount
+        # Prepare data for the stacked bar chart
+        months = sorted(monthly_tag_amounts.keys())
+        data = {tag: [] for tag in visible_tags}
+        data['No Tag'] = []
 
-        # Prepare data for the bar chart
-        months = list(monthly_amounts.keys())
-        amounts = list(monthly_amounts.values())
-        rounded_amounts = [f"${round(amount, 2)}" for amount in amounts]
+        for month in months:
+            for tag in visible_tags:
+                data[tag].append(round(monthly_tag_amounts[month][tag], 2))
+            data['No Tag'].append(round(monthly_tag_amounts[month]['No Tag'], 2))
 
-        # Create the bar chart using Plotly
+        # Create the stacked bar chart using Plotly
         fig = go.Figure()
 
-        # Add bars for each month
+        # Add bars for each tag
+        for tag in visible_tags:
+            fig.add_trace(go.Bar(
+                x=months,
+                y=data[tag],
+                name=tag,
+                text=[f"${amount}" for amount in data[tag]],
+                textposition='inside',
+                hoverinfo='x+y+text',
+                hovertemplate='<b>'+tag+'</b><br>Month: %{x}<br>Amount: $%{y:.2f}<extra></extra>'
+            ))
+
+        # Add bars for "No Tag"
         fig.add_trace(go.Bar(
             x=months,
-            y=amounts,
-            marker=dict(color='rgba(58, 71, 80, 1)'),  # Dark color for bars
-            text=rounded_amounts,  # Display amounts on the bars
+            y=data['No Tag'],
+            name='No Tag',
+            text=[f"${amount}" for amount in data['No Tag']],
             textposition='inside',
-            hoverinfo='x+y+text',  # Show x (month) and y (amount) on hover
+            hoverinfo='x+y+text',
+            hovertemplate='<b>No Tag</b><br>Month: %{x}<br>Amount: $%{y}<extra></extra>'
         ))
 
         # Update layout settings
         fig.update_layout(
-            title="Spending by Month",
+            title="Spending by Month and Tag",
             xaxis_title="Month",
             yaxis_title="Amount Spent",
+            barmode='stack',
             paper_bgcolor='#19232D',
             plot_bgcolor='#19232D',
             font=dict(color='white'),

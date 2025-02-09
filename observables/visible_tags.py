@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QDialog, QVBoxLayout, QPushButton, QCheckBox, QListWidget, QListWidgetItem
-from tags import tags 
-from observable import Observable
+from custom_types.tags import tags 
+from custom_types.observable import Observable
 
 # Observable to store the selected tags
 visibleTags = Observable()

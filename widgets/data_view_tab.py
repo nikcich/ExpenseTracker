@@ -1,6 +1,6 @@
-from load_save_data import transactions_observable  # Assuming 'data' is the list of transactions
-from transaction_table import TransactionTable  # Assuming the TransactionTable class is in 'transaction_table.py'
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTabWidget, QMainWindow
+from utils.load_save_data import transactions_observable  # Assuming 'data' is the list of transactions
+from widgets.transaction_table import TransactionTable  # Assuming the TransactionTable class is in 'transaction_table.py'
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PyQt5.QtCore import Qt
 
 class DataViewTab(QWidget):

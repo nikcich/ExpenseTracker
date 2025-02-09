@@ -1,8 +1,8 @@
 from PyQt5 import QtWidgets, QtWebEngineWidgets
 import plotly.graph_objects as go
-from load_save_data import transactions_observable
+from utils.load_save_data import transactions_observable
 from PyQt5.QtCore import QDate
-from visible_tags import visibleTags
+from observables.visible_tags import visibleTags
 import pandas as pd
 
 class DailyHeatmapChart(QtWidgets.QWidget):

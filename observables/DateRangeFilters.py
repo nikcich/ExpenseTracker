@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton
-from observable import Observable
-from date_range import DateRangeSelector
+from custom_types.observable import Observable
+from widgets.date_range import DateRangeSelector
 
 start = Observable()
 start.set_data(QDate.currentDate().addYears(-1))

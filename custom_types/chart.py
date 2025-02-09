@@ -1,8 +1,8 @@
 from PyQt5 import QtCore, QtWidgets
-from load_save_data import transactions_observable
+from utils.load_save_data import transactions_observable
 from PyQt5.QtCore import QDate
-from sum_label import TotalAmountLabel
-from DateRangeFilters import start, end
+from widgets.sum_label import TotalAmountLabel
+from observables.DateRangeFilters import start, end
 
 class ChartWidget(QtWidgets.QWidget):
     def __init__(self, chart, parent=None):

@@ -1,8 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
-from PyQt5.QtCore import Qt, QTextStream
-from unsaved_changes import unsaved_changes
-from PyQt5.QtCore import QTimer
-from load_save_data import transactions_observable, save_to_pickle_file
+from observables.unsaved_changes import unsaved_changes
+from utils.load_save_data import save_to_pickle_file
 
 class HeaderBanner(QWidget):
     def __init__(self, parent):

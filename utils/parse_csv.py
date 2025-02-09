@@ -1,9 +1,7 @@
 import csv
 from datetime import datetime
-from Transaction import Transaction
-from load_save_data import transactions_observable
-from tags import tags
-
+from custom_types.Transaction import Transaction
+from utils.load_save_data import transactions_observable
 
 def parse_csv_to_transactions(file_path, csv_definition):
     transactions = []

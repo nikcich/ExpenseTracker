@@ -1,11 +1,11 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, QSpacerItem, QSizePolicy
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
-from csv_validator import validate_csv
-from csv_definitions import wf_csv_definition, amex_csv_definition
-from parse_csv import parse_csv_to_transactions
-from load_save_data import transactions_observable, save_to_pickle_file
-from unsaved_changes import unsaved_changes
+from utils.csv_validator import validate_csv
+from utils.csv_definitions import wf_csv_definition, amex_csv_definition
+from utils.parse_csv import parse_csv_to_transactions
+from utils.load_save_data import transactions_observable
+from observables.unsaved_changes import unsaved_changes
 
 class FileImportTab(QWidget):
     def __init__(self, parent=None):
