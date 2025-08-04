@@ -32,3 +32,21 @@ amex_csv_definition = {
     'amount_header': 'Amount',
     'description_header': 'Description'
 }
+
+capital_csv_definition = {
+    'headers': [
+        "Account Number", "Transaction Description","Transaction Date", "Transaction Type","Transaction Amount","Balance"
+    ],
+    'columns': [
+        {'type': 'string', 'index': 0},    # Description (string)
+        {'type': 'string', 'index': 1},    # Description (string)
+        {'type': 'date', 'index':   2},  # Date (date format)
+        {'type': 'string', 'index': 3},    # Type (currency/float)
+        {'type': 'float', 'index':  4},     # Amount (float)
+        {'type': 'float', 'index':  5},    # Description (string)
+    ],
+    'date_header': 'Transaction Date',
+    'amount_header': 'Transaction Amount',
+    'description_header': 'Transaction Description',
+    'type_flag_header': 'Transaction Type'
+}

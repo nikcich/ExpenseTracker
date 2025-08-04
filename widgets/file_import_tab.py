@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QFileDial
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 from utils.csv_validator import validate_csv
-from utils.csv_definitions import wf_csv_definition, amex_csv_definition
+from utils.csv_definitions import wf_csv_definition, amex_csv_definition, capital_csv_definition
 from utils.parse_csv import parse_csv_to_transactions
 from utils.load_save_data import transactions_observable
 from observables.unsaved_changes import unsaved_changes
@@ -93,6 +93,7 @@ class FileImportTab(QWidget):
         if file_path:
             resWf = validate_csv(file_path, wf_csv_definition)
             resAmex = validate_csv(file_path, amex_csv_definition)
+            resCapital = validate_csv(file_path, capital_csv_definition)
 
             if resWf:
                 self.info_label.setText("Successfully uploaded Wells Fargo spending report")
@@ -104,6 +105,11 @@ class FileImportTab(QWidget):
                 self.label.setText(f"Selected file: {file_path}")
                 self.parse_button.setVisible(True)  # Show the Parse button
                 self.selected_file_definition = amex_csv_definition
+            elif resCapital:
+                self.info_label.setText("Successfully uploaded Capital One spending report")
+                self.label.setText(f"Selected file: {file_path}")
+                self.parse_button.setVisible(True)  # Show the Parse button
+                self.selected_file_definition = capital_csv_definition
             else:
                 self.info_label.setText("Invalid file format")
                 self.selected_file_definition = None

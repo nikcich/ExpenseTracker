@@ -9,7 +9,11 @@ def validate_data(value, column_type):
             # Attempt to convert the value to a valid date format
             datetime.strptime(value, "%m/%d/%Y")
         except ValueError:
-            return False
+            try:
+                # Attempt to convert the value to a valid date format
+                datetime.strptime(value, "%m/%d/%y")
+            except ValueError:
+                return False
     elif column_type == 'float':
         try:
             # Remove currency symbols and commas before checking if it's a valid float

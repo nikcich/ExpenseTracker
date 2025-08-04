@@ -74,5 +74,5 @@ tags = {
     "Vacation/Travel": {
         "tag_name": "Vacation/Travel",
         "color": "#14eb00" 
-    },
+    }
 }

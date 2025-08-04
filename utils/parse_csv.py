@@ -29,6 +29,7 @@ def parse_csv_to_transactions(file_path, csv_definition):
                 isDateHeader = header == csv_definition['date_header']
                 isAmountHeader = header == csv_definition['amount_header']
                 isDescriptionHeader = header == csv_definition['description_header']
+                hasCreditDebitHeader = csv_definition['type_flag_header']
 
                 # Convert values based on the type defined in the csv_definition
                 if column_type == 'date' and isDateHeader:
@@ -36,7 +37,25 @@ def parse_csv_to_transactions(file_path, csv_definition):
                     try:
                         transaction_data['date'] = datetime.strptime(value, "%m/%d/%Y").strftime("%m/%d/%Y")
                     except ValueError:
-                        print(f"Error: Invalid date format in row: {row}")
+                        try:
+                            transaction_data['date'] = datetime.strptime(value, "%m/%d/%y").strftime("%m/%d/%Y")
+                        except ValueError:
+                            print(f"Error: Invalid date format in row: {row}")
+                            continue
+                elif column_type == 'float' and isAmountHeader and hasCreditDebitHeader:
+                    # Convert to float (assuming it's a currency)
+                    try:
+                        transaction_data['amount'] = float(value.replace('$', '').replace(',', '').strip())
+                    except ValueError:
+                        print(f"Error: Invalid amount format in row: {row}")
+                        continue
+                    try:
+                        creditDebitHeaderIndex = headers.index(hasCreditDebitHeader)
+                        creditDebitHeaderValue = row[creditDebitHeaderIndex]
+                        if creditDebitHeaderValue == 'Credit':
+                            transaction_data['amount'] = -transaction_data['amount']
+                    except ValueError:
+                        print(f"Error: Invalid credit/debit header format in row: {row}")
                         continue
                 elif column_type == 'float' and isAmountHeader:
                     # Convert to float (assuming it's a currency)
@@ -65,5 +84,4 @@ def parse_csv_to_transactions(file_path, csv_definition):
                     transactions.append(transaction)
                 else:
                     print(f"Duplicate transaction found: {existing_transaction}")
-    
     return transactions
