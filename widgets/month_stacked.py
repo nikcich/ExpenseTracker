@@ -68,6 +68,14 @@ class MonthlyStackedBarChart(QtWidgets.QWidget):
                     # If the transaction has no tags, accumulate it in the "No Tag" category
                     monthly_tag_amounts[month_year]['No Tag'] += transaction.amount
 
+
+        for outer_key, inner_dict in monthly_tag_amounts.items():
+            for inner_key, value in inner_dict.items():
+                try:
+                    monthly_tag_amounts[outer_key][inner_key] = abs(float(value))
+                except (ValueError, TypeError):
+                    monthly_tag_amounts[outer_key][inner_key] = 0.0
+
         # Prepare data for the stacked bar chart
         months = sorted(monthly_tag_amounts.keys())
         data = {tag: [] for tag in visible_tags}

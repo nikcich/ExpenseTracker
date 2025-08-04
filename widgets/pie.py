@@ -81,7 +81,8 @@ class PieChart(QtWidgets.QWidget):
 
         # Prepare data for the pie chart
         tags = list(tag_amounts.keys())
-        amounts = list(tag_amounts.values())
+        amounts_orig = list(tag_amounts.values())
+        amounts = [abs(x) for x in amounts_orig]
 
         # Create the pie chart using Plotly
         fig = px.pie(values=amounts, names=tags, title="Transaction Amounts by Tag", template="plotly_dark")

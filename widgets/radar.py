@@ -81,7 +81,8 @@ class RadarChart(QtWidgets.QWidget):
 
         # Prepare data for the radar chart
         tags = list(tag_amounts.keys())
-        amounts = list(tag_amounts.values())
+        amounts_orig = list(tag_amounts.values())
+        amounts = [abs(x) for x in amounts_orig]
 
         # Create the radar chart using Plotly
         fig = go.Figure(go.Scatterpolar(

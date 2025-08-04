@@ -71,4 +71,8 @@ tags = {
         "tag_name": "Credit Repayment",
         "color": "#FF5722"  # A rich orange-red that stands out
     },
+    "Vacation/Travel": {
+        "tag_name": "Vacation/Travel",
+        "color": "#14eb00" 
+    },
 }

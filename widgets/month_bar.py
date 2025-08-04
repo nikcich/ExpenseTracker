@@ -77,7 +77,8 @@ class MonthlyBarChart(QtWidgets.QWidget):
 
         # Prepare data for the bar chart
         months = list(monthly_amounts.keys())
-        amounts = list(monthly_amounts.values())
+        amounts_orig = list(monthly_amounts.values())
+        amounts = [abs(x) for x in amounts_orig]
         rounded_amounts = [f"${round(amount, 2)}" for amount in amounts]
 
         # Create the bar chart using Plotly

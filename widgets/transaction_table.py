@@ -148,6 +148,7 @@ class TransactionTable(QWidget):
         self.table_widget.setRowCount(len(self.transactions))
         self.table_widget.verticalScrollBar().setMaximum(len(self.transactions))
         self.table_widget.verticalScrollBar().setValue(self.sliderPos)
+        print("Going to: ", self.sliderPos)
         for row, transaction in enumerate(self.transactions):
             formatted_amount = f"${transaction.amount:,.2f}"
             transaction_date = QDate.fromString(transaction.date, 'MM/dd/yyyy')
@@ -217,6 +218,8 @@ class TransactionTable(QWidget):
 
     def select_tags_for_selected_rows(self):
         selected_rows = self.table_widget.selectionModel().selectedRows()
+
+        print(selected_rows)
         selected_transactions = []
         for row in selected_rows:
             date_item = self.table_widget.item(row.row(), 1)

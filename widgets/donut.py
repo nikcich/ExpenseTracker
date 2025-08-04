@@ -81,7 +81,8 @@ class DonutChart(QtWidgets.QWidget):
 
         # Prepare data for the donut chart
         tags = list(tag_amounts.keys())
-        amounts = list(tag_amounts.values())
+        amounts_orig = list(tag_amounts.values())
+        amounts = [abs(x) for x in amounts_orig]
 
         # Create the donut chart using Plotly
         fig = px.pie(values=amounts, names=tags, title="Transaction Amounts by Tag", template="plotly_dark", hole=0.7)

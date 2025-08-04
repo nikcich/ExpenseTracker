@@ -81,7 +81,8 @@ class TagBarChart(QtWidgets.QWidget):
 
         # Prepare data for the horizontal bar chart
         tags = list(tag_amounts.keys())
-        amounts = list(tag_amounts.values())
+        amounts_orig = list(tag_amounts.values())
+        amounts = [abs(x) for x in amounts_orig]
 
         # Calculate the total amount for percentage calculation
         total_amount = sum(amounts)
