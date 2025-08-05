@@ -1,52 +1,58 @@
+from enum import Enum, auto
+
+class Role(Enum):
+    DATE = auto()
+    AMOUNT = auto()
+    DESCRIPTION = auto()
+
+class ColumnType(Enum):
+    DATE = auto()
+    STRING = auto()
+    FLOAT = auto()
+    TYPE_FLAG = auto()
+
+
+
 wf_csv_definition = {
-    'headers': [
-        "Master Category", "Subcategory", "Date", "Location", "Payee", 
-        "Description", "Payment Method", "Amount", ''
-    ],
+    'name': 'Wells Fargo Spending Report',
+    'hasHeaders': True,
     'columns': [
-        {'type': 'string', 'index': 0},  # Master Category (string)
-        {'type': 'string', 'index': 1},  # Subcategory (string)
-        {'type': 'date', 'index': 2},    # Date (date format)
-        {'type': 'string', 'index': 3},  # Location (string)
-        {'type': 'string', 'index': 4},  # Payee (string)
-        {'type': 'string', 'index': 5},  # Description (string)
-        {'type': 'string', 'index': 6},  # Payment Method (string)
-        {'type': 'float', 'index': 7},   # Amount (currency/float)
-        {'type': 'string', 'index': 8},  # Empty
+        {'type': ColumnType.DATE, 'index': 2, 'role': Role.DATE},    # Date (date format)
+        {'type': ColumnType.STRING, 'index': 5, 'role': Role.DESCRIPTION},  # Description (string)
+        {'type': ColumnType.FLOAT, 'index': 7, 'role': Role.AMOUNT},   # Amount (currency/float)
     ],
-    'date_header': 'Date',
-    'amount_header': 'Amount',
-    'description_header': 'Description'
+}
+
+wf_activity_csv_definition = {
+    'name': 'Wells Fargo Activity Report',
+    'hasHeaders': False,
+    'columns': [
+        {'type': ColumnType.DATE, 'index': 0, 'role': Role.DATE },    # Date (date format)
+        {'type': ColumnType.FLOAT, 'index': 1, 'role': Role.AMOUNT, 'invert': True},   # Amount (currency/float), invert to multiple by -1. Expense tracker means + is anticipated to be expenses and - is income based on frame of reference
+        {'type': ColumnType.STRING, 'index': 4, 'role': Role.DESCRIPTION},  # Description
+    ],
 }
 
 amex_csv_definition = {
-    'headers': [
-        "Date", "Description", "Amount"
-    ],
+    'name': 'American Express Spending Report',
+    'hasHeaders': True,
     'columns': [
-        {'type': 'date', 'index': 0},      # Date (date format)
-        {'type': 'string', 'index': 1},    # Description (string)
-        {'type': 'float', 'index': 2},     # Amount (currency/float)
+        {'type': ColumnType.DATE, 'index': 0, 'role': Role.DATE},      # Date (date format)
+        {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
+        {'type': ColumnType.FLOAT, 'index': 2, 'role': Role.AMOUNT},     # Amount (currency/float)
     ],
-    'date_header': 'Date',
-    'amount_header': 'Amount',
-    'description_header': 'Description'
 }
 
 capital_csv_definition = {
-    'headers': [
-        "Account Number", "Transaction Description","Transaction Date", "Transaction Type","Transaction Amount","Balance"
-    ],
+    'name': 'Capital One Activity Report',
+    'hasHeaders': True,
     'columns': [
-        {'type': 'string', 'index': 0},    # Description (string)
-        {'type': 'string', 'index': 1},    # Description (string)
-        {'type': 'date', 'index':   2},  # Date (date format)
-        {'type': 'string', 'index': 3},    # Type (currency/float)
-        {'type': 'float', 'index':  4},     # Amount (float)
-        {'type': 'float', 'index':  5},    # Description (string)
+        {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
+        {'type': ColumnType.DATE, 'index':   2, 'role': Role.DATE},  # Date (date format)
+        {'type': ColumnType.TYPE_FLAG, 'index': 3},    # Type (credit/debit)
+        {'type': ColumnType.FLOAT, 'index':  4, 'role': Role.AMOUNT}, # Amount (float)
     ],
-    'date_header': 'Transaction Date',
-    'amount_header': 'Transaction Amount',
-    'description_header': 'Transaction Description',
-    'type_flag_header': 'Transaction Type'
 }
+
+# Always add new definitions to this list
+all_csv_definitions = [wf_csv_definition, wf_activity_csv_definition, amex_csv_definition, capital_csv_definition]

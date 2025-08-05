@@ -13,6 +13,7 @@ from observables.visible_tags import TagSelectionDialog
 from observables.DateRangeFilters import DateRangeDialog, start, end
 from custom_types.chart import ChartWidget
 from widgets.pie import PieChart
+from widgets.savings_breakdown import HighLevelSavingsBarChart
 from widgets.radar import RadarChart
 from widgets.month_bar import MonthlyBarChart
 from widgets.tag_bar import TagBarChart
@@ -35,6 +36,7 @@ class App(QMainWindow):
             "Data View": GenericDockWidget("Data View", DataViewTab(self), self),
             "File Import": GenericDockWidget("File Import", FileImportTab(self), self),
             "Pie Chart": GenericDockWidget("Pie Chart", ChartWidget(PieChart(start, end), self), self),
+            "High Level Expenses/Income Chart": GenericDockWidget("High Level Spending/Income Rate",  HighLevelSavingsBarChart(start, end), self),
             "Donut Chart": GenericDockWidget("Donut Chart", ChartWidget(DonutChart(start, end), self), self),
             "Radar Chart": GenericDockWidget("Radar Chart", ChartWidget(RadarChart(start, end), self), self),
             "Tag Bar Chart": GenericDockWidget("Tag Bar Chart", ChartWidget(TagBarChart(start, end), self), self),

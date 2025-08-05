@@ -117,8 +117,8 @@ class TransactionTable(QWidget):
         self.transactions = transactions
         self.sliderPos = sliderPos
         self.table_widget = QTableWidget(self)
-        self.table_widget.setColumnCount(4)
-        self.table_widget.setHorizontalHeaderLabels(["Tags", "Date", "Description", "Amount"])
+        self.table_widget.setColumnCount(5)
+        self.table_widget.setHorizontalHeaderLabels(["Tags", "Date", "Description", "Amount", "UUID"])
         self.table_widget.setSelectionBehavior(QTableView.SelectRows)
         self.table_widget.setSortingEnabled(True)
         self.table_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -148,13 +148,17 @@ class TransactionTable(QWidget):
         self.table_widget.setRowCount(len(self.transactions))
         self.table_widget.verticalScrollBar().setMaximum(len(self.transactions))
         self.table_widget.verticalScrollBar().setValue(self.sliderPos)
-        print("Going to: ", self.sliderPos)
         for row, transaction in enumerate(self.transactions):
             formatted_amount = f"${transaction.amount:,.2f}"
             transaction_date = QDate.fromString(transaction.date, 'MM/dd/yyyy')
             self.table_widget.setItem(row, 1, CustomTableWidgetItem(1, transaction_date.toString('yyyy-MM-dd')))
             self.table_widget.setItem(row, 2, CustomTableWidgetItem(2, transaction.description))
             self.table_widget.setItem(row, 3, CustomTableWidgetItem(3, formatted_amount))
+            self.table_widget.setItem(row, 4, CustomTableWidgetItem(4, transaction.uuid))
+
+            self.table_widget.setColumnHidden(4, True)
+
+
             tag_widget = self.create_tag_widget(transaction.tags)
             self.table_widget.setCellWidget(row, 0, tag_widget)
         self.table_widget.verticalScrollBar().setValue(self.sliderPos)
@@ -191,13 +195,11 @@ class TransactionTable(QWidget):
         self.transactions = transactions
         self.refresh()
 
-    def match_transaction(self, date, desc, amount):
-        if date and desc and amount:
+    def match_transaction(self, uuid):
+        if uuid:
             matching_transactions = [
                 trans for trans in self.transactions
-                if (QDate.fromString(trans.date, 'MM/dd/yyyy').toString('yyyy-MM-dd') == date and
-                    trans.description == desc and
-                    f"${trans.amount:,.2f}" == amount)
+                if (trans.uuid == uuid)
             ]
         if matching_transactions:
             return matching_transactions[0]
@@ -207,25 +209,19 @@ class TransactionTable(QWidget):
     def on_cell_double_clicked(self, row, column):
         if column == 0:
             item = self.table_widget.cellWidget(row, column)
-            date = self.table_widget.item(row, 1)
-            description = self.table_widget.item(row, 2)
-            amount = self.table_widget.item(row, 3)
+            uuid = self.table_widget.item(row, 4)
             if item:
-                transaction = self.match_transaction(date.text(), description.text(), amount.text())
+                transaction = self.match_transaction(uuid.text())
                 if transaction:
                     dialog = TagSelectionDialog(self, transaction)
                     dialog.exec_()
 
     def select_tags_for_selected_rows(self):
         selected_rows = self.table_widget.selectionModel().selectedRows()
-
-        print(selected_rows)
         selected_transactions = []
         for row in selected_rows:
-            date_item = self.table_widget.item(row.row(), 1)
-            description_item = self.table_widget.item(row.row(), 2)
-            amount_item = self.table_widget.item(row.row(), 3)
-            transaction = self.match_transaction(date_item.text(), description_item.text(), amount_item.text())
+            uuid = self.table_widget.item(row.row(), 4)
+            transaction = self.match_transaction(uuid.text())
             if transaction:
                 selected_transactions.append(transaction)
         if selected_transactions:

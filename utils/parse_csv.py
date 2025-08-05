@@ -2,20 +2,52 @@ import csv
 from datetime import datetime
 from custom_types.Transaction import Transaction
 from utils.load_save_data import transactions_observable
+from utils.csv_definitions import ColumnType, Role
+import uuid
+import re
+
+def normalize(s):
+    return re.sub(r'\s+', ' ', s.strip())
+
+def loose_match_descriptions(a, b):
+    a_norm = normalize(a)
+    b_norm = normalize(b)
+    return (
+        a_norm == b_norm or
+        a_norm in b_norm or
+        b_norm in a_norm
+    )
+
+def get_column_data(value, column_type):
+    parsed_value = None
+    if column_type == ColumnType.DATE:
+        try:
+            # Attempt to convert the value to a valid date format
+            parsed_value = datetime.strptime(value, "%m/%d/%Y").strftime("%m/%d/%Y")
+        except ValueError:
+            try:
+                # Attempt to convert the value to a valid date format
+                parsed_value = datetime.strptime(value, "%m/%d/%y").strftime("%m/%d/%Y")
+            except ValueError:
+                raise ValueError("Invalid date format provided")
+    elif column_type == ColumnType.FLOAT:
+        try:
+            # Remove currency symbols and commas before checking if it's a valid float
+            parsed_value = float(value.replace('$', '').replace(',', '').strip())
+        except ValueError:
+            raise ValueError("Invalid amount provided")
+    elif column_type == ColumnType.STRING:
+        parsed_value = normalize(str(value))
+    return parsed_value
 
 def parse_csv_to_transactions(file_path, csv_definition):
     transactions = []
-    data = transactions_observable.get_data()
+    data = transactions_observable.get_expenses()
     with open(file_path, mode='r', newline='') as file:
         csv_reader = csv.reader(file)
         
-        # Read the header (first row)
-        headers = next(csv_reader)
-        
-        # Validate the headers against the csv_definition
-        if headers != csv_definition['headers']:
-            print("Error: CSV headers do not match the expected format.")
-            return []
+        if csv_definition['hasHeaders']:
+            next(csv_reader)
 
         # Iterate through the rows of the CSV (excluding header)
         for row in csv_reader:
@@ -24,48 +56,48 @@ def parse_csv_to_transactions(file_path, csv_definition):
             for col_def in csv_definition['columns']:
                 column_index = col_def['index']
                 column_type = col_def['type']
+                column_role = col_def['role']
+                invert = col_def['invert'] if 'invert' in col_def else False
                 value = row[column_index]
-                header = headers[column_index]
-                isDateHeader = header == csv_definition['date_header']
-                isAmountHeader = header == csv_definition['amount_header']
-                isDescriptionHeader = header == csv_definition['description_header']
-                hasCreditDebitHeader = csv_definition['type_flag_header']
 
+                col_with_type_flag = next(
+                    (col for col in csv_definition['columns'] if col['type'] == ColumnType.TYPE_FLAG),
+                    None
+                )
+                hasCreditDebitHeader = col_with_type_flag is not None
+
+                transaction_data['uuid'] = str(uuid.uuid4())
                 # Convert values based on the type defined in the csv_definition
-                if column_type == 'date' and isDateHeader:
-                    # Convert date string to a proper date format
+                if column_type == ColumnType.DATE and column_role == Role.DATE:
                     try:
-                        transaction_data['date'] = datetime.strptime(value, "%m/%d/%Y").strftime("%m/%d/%Y")
+                        converted_value = get_column_data(value, column_type)
+                        transaction_data['date'] = converted_value
                     except ValueError:
+                        print(f"Error: Invalid date format in row: {row}")
+                        continue
+                elif column_type == ColumnType.FLOAT and column_role == Role.AMOUNT:
+                    # Convert to float (assuming it's a currency)
+                    try:
+                        converted_value = get_column_data(value, column_type)
+                        transaction_data['amount'] = converted_value
+                    except ValueError:
+                        print(f"Error: Invalid amount format in row: {row}")
+                        continue
+
+                    if hasCreditDebitHeader:
                         try:
-                            transaction_data['date'] = datetime.strptime(value, "%m/%d/%y").strftime("%m/%d/%Y")
+                            creditDebitHeaderIndex = col_with_type_flag['index']
+                            creditDebitHeaderValue = row[creditDebitHeaderIndex]
+                            if str(creditDebitHeaderValue).lower() == 'credit':
+                                transaction_data['amount'] = -transaction_data['amount']
                         except ValueError:
-                            print(f"Error: Invalid date format in row: {row}")
+                            print(f"Error: Invalid credit/debit header format in row: {row}")
                             continue
-                elif column_type == 'float' and isAmountHeader and hasCreditDebitHeader:
-                    # Convert to float (assuming it's a currency)
-                    try:
-                        transaction_data['amount'] = float(value.replace('$', '').replace(',', '').strip())
-                    except ValueError:
-                        print(f"Error: Invalid amount format in row: {row}")
-                        continue
-                    try:
-                        creditDebitHeaderIndex = headers.index(hasCreditDebitHeader)
-                        creditDebitHeaderValue = row[creditDebitHeaderIndex]
-                        if creditDebitHeaderValue == 'Credit':
-                            transaction_data['amount'] = -transaction_data['amount']
-                    except ValueError:
-                        print(f"Error: Invalid credit/debit header format in row: {row}")
-                        continue
-                elif column_type == 'float' and isAmountHeader:
-                    # Convert to float (assuming it's a currency)
-                    try:
-                        transaction_data['amount'] = float(value.replace('$', '').replace(',', '').strip())
-                    except ValueError:
-                        print(f"Error: Invalid amount format in row: {row}")
-                        continue
-                elif column_type == 'string' and isDescriptionHeader:
-                    transaction_data['description'] = value
+                    if invert:
+                        transaction_data['amount'] = -transaction_data['amount']
+                elif column_type == ColumnType.STRING and column_role == Role.DESCRIPTION:
+                    converted_value = get_column_data(value, column_type)
+                    transaction_data['description'] = converted_value
 
             # Ensure that 'date', 'amount', and 'description' are present for the transaction
             if 'date' in transaction_data and 'amount' in transaction_data and 'description' in transaction_data:
@@ -74,7 +106,7 @@ def parse_csv_to_transactions(file_path, csv_definition):
                 for existing in data:
                     if (existing.date == transaction_data['date'] and 
                         existing.amount == transaction_data['amount'] and
-                        existing.description == transaction_data['description']):
+                        loose_match_descriptions(existing.description, transaction_data['description'])):
                         existing_transaction = existing
                         break
 

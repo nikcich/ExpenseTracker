@@ -36,7 +36,7 @@ class ChartWidget(QtWidgets.QWidget):
 
     def get_filtered_transactions(self):
         return [
-            transaction for transaction in transactions_observable.get_data()
+            transaction for transaction in transactions_observable.get_expenses()
             if self.start.get_data() <= QDate.fromString(transaction.date, 'MM/dd/yyyy') <= self.end.get_data()
         ]
 

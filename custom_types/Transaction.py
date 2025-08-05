@@ -1,19 +1,21 @@
 from datetime import datetime
+import uuid as uuidv4
 
 class Transaction:
-    def __init__(self, tags=None, date=None, description="", amount=0.0, source=""):
+    def __init__(self, uuid=None, tags=None, date=None, description="", amount=0.0, source=""):
         # Default to empty list if no tags provided
         self.tags = tags if tags is not None else []
         
         # If no date is provided, set it to the current date
         self.date = date if date else datetime.now().strftime("%m/%d/%Y")
         
+        self.uuid = uuid or str(uuidv4.uuid4())
         self.description = description
         self.amount = amount
         self.source = source
 
     def __repr__(self):
-        return (f"Transaction(tags={self.tags}, date={self.date}, "
+        return (f"Transaction(uuid={self.uuid}, tags={self.tags}, date={self.date}, "
                 f"description={self.description}, amount={self.amount}, source={self.source})")
 
     def add_tag(self, tag):

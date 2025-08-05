@@ -27,7 +27,7 @@ class DataViewTab(QWidget):
 
         """Refresh the content of this tab."""
         # Update transaction count label
-        transactions = transactions_observable.get_data()
+        transactions = transactions_observable.get_expenses()
         self.transaction_count_label.setText(f"Number of Transactions: {len(transactions)}")
 
         # Remove the placeholder label

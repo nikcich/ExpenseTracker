@@ -1,10 +1,11 @@
 # csv_validator.py
 import csv
 from datetime import datetime
+from utils.csv_definitions import ColumnType
 
 # Function to validate data types (this can be expanded to include more types)
 def validate_data(value, column_type):
-    if column_type == 'date':
+    if column_type == ColumnType.DATE:
         try:
             # Attempt to convert the value to a valid date format
             datetime.strptime(value, "%m/%d/%Y")
@@ -14,57 +15,33 @@ def validate_data(value, column_type):
                 datetime.strptime(value, "%m/%d/%y")
             except ValueError:
                 return False
-    elif column_type == 'float':
+    elif column_type == ColumnType.FLOAT:
         try:
             # Remove currency symbols and commas before checking if it's a valid float
             value = value.replace('$', '').replace(',', '').strip()
             float(value)
         except ValueError:
             return False
-    elif column_type == 'string':
+    elif column_type == ColumnType.STRING:
         return True
     return True
 
 # Generic CSV Validation function
 def validate_csv(file_path, csv_definition):
-    """
-    Validates a CSV file against a given definition.
-
-    Args:
-    - file_path: The path to the CSV file.
-    - csv_definition: A dictionary with 'headers' and 'columns' validation info.
-      Example:
-      {
-        'headers': ['Header1', 'Header2', ...],
-        'columns': [
-            {'type': 'string', 'index': 0},
-            {'type': 'date', 'index': 1},
-            {'type': 'float', 'index': 2}
-        ]
-      }
-
-    Returns:
-    - True if the file matches the format, False otherwise.
-    """
     # Open the CSV file
     try:
         with open(file_path, mode='r', newline='') as file:
             csv_reader = csv.reader(file)
-            
-            # Read the header (first row)
-            headers = next(csv_reader)
-            
-            # Validate header
-            if headers != csv_definition['headers']:
-                print("Error: Headers do not match the expected format.")
-                return False
-            
+
             # Validate each row
-            row_number = 1  # Start counting rows from 1 (skipping the header)
+            if csv_definition['hasHeaders']:
+                next(csv_reader)  # Skip header row
+            
+            row_number = 0  # Start counting rows from 1 (skipping the header)
             for row in csv_reader:
                 row_number += 1
                 # Check if the row has the correct number of columns
-                if len(row) != len(csv_definition['headers']):
+                if len(row) < len(csv_definition['columns']):
                     print(f"Error: Row {row_number} has an incorrect number of columns.")
                     return False
                 
@@ -73,7 +50,7 @@ def validate_csv(file_path, csv_definition):
                     column_index = col_def['index']
                     column_type = col_def['type']
                     if not validate_data(row[column_index], column_type):
-                        print(f"Error: Row {row_number} has invalid data in column {column_index + 1} ({headers[column_index]}).")
+                        print(f"Error: Row {row_number} has invalid data in column {col_def}.")
                         print(row[column_index], column_type)
                         return False
             

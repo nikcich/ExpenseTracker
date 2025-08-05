@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QFileDial
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 from utils.csv_validator import validate_csv
-from utils.csv_definitions import wf_csv_definition, amex_csv_definition, capital_csv_definition
+from utils.csv_definitions import all_csv_definitions
 from utils.parse_csv import parse_csv_to_transactions
 from utils.load_save_data import transactions_observable
 from observables.unsaved_changes import unsaved_changes
@@ -91,25 +91,17 @@ class FileImportTab(QWidget):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open CSV File", "", "CSV files (*.csv)")
         
         if file_path:
-            resWf = validate_csv(file_path, wf_csv_definition)
-            resAmex = validate_csv(file_path, amex_csv_definition)
-            resCapital = validate_csv(file_path, capital_csv_definition)
+            matching_csv = None
+            for csv_def in all_csv_definitions:
+                if validate_csv(file_path, csv_def):
+                    matching_csv = csv_def
+                    break
 
-            if resWf:
-                self.info_label.setText("Successfully uploaded Wells Fargo spending report")
+            if matching_csv is not None:
+                self.info_label.setText(f"Successfully uploaded {matching_csv['name']}")
                 self.label.setText(f"Selected file: {file_path}")
-                self.parse_button.setVisible(True)  # Show the Parse button
-                self.selected_file_definition = wf_csv_definition
-            elif resAmex:
-                self.info_label.setText("Successfully uploaded AmEx spending report")
-                self.label.setText(f"Selected file: {file_path}")
-                self.parse_button.setVisible(True)  # Show the Parse button
-                self.selected_file_definition = amex_csv_definition
-            elif resCapital:
-                self.info_label.setText("Successfully uploaded Capital One spending report")
-                self.label.setText(f"Selected file: {file_path}")
-                self.parse_button.setVisible(True)  # Show the Parse button
-                self.selected_file_definition = capital_csv_definition
+                self.parse_button.setVisible(True)
+                self.selected_file_definition = matching_csv
             else:
                 self.info_label.setText("Invalid file format")
                 self.selected_file_definition = None
@@ -119,7 +111,7 @@ class FileImportTab(QWidget):
         file_path = self.label.text().replace("Selected file: ", "")
         if file_path and self.selected_file_definition is not None:
             transactions = parse_csv_to_transactions(file_path, self.selected_file_definition)
-            data = transactions_observable.get_data()
+            data = transactions_observable.get_expenses()
             data.extend(transactions)
             transactions_observable.set_data(data)
             self.label.setText("No file selected")

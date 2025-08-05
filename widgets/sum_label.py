@@ -31,7 +31,7 @@ class TotalAmountLabel(QtWidgets.QWidget):
 
     def update_total_amount(self):
         # Get the list of transactions
-        transactions = transactions_observable.get_data()
+        transactions = transactions_observable.get_expenses()
 
         # Get the list of visible tags
         visible_tags = visibleTags.get_data()

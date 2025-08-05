@@ -1,10 +1,10 @@
 from PyQt5 import QtWidgets, QtWebEngineWidgets
-import plotly.express as px
+import plotly.graph_objects as go
 from utils.load_save_data import transactions_observable
 from PyQt5.QtCore import QDate
 from observables.visible_tags import visibleTags
 
-class DonutChart(QtWidgets.QWidget):
+class HighLevelSavingsBarChart(QtWidgets.QWidget):
     def __init__(self, start, end):
         super().__init__()
 
@@ -30,20 +30,19 @@ class DonutChart(QtWidgets.QWidget):
         
     def show_graph(self):
         # Get the list of transactions
-        transactions = transactions_observable.get_expenses()
+        transactions = transactions_observable.get_data()
 
         startDate = self.start.get_data()
         endDate = self.end.get_data()
 
-        # Aggregate amounts by tag
-        tag_amounts = {}
-        tag_colors = {}  # Dictionary to store the color of each tag
-
-        # Get the list of visible tags
-        visible_tags = visibleTags.get_data()
-
-        # Add a "No Tag" entry for transactions without any tags
-        no_tag_amount = 0
+        tag_amounts = {
+            "Income": 0,
+            "Expenses": 0,
+        }
+        tag_colors = {
+            "Income": "#00a545",  # Green for income
+            "Expenses": "#e74c3c",  # Red for expenses
+        }  # Dictionary to store the color of each tag
 
         # Filter transactions by the selected date range and visible tags
         for transaction in transactions:
@@ -53,25 +52,19 @@ class DonutChart(QtWidgets.QWidget):
             if startDate <= transaction_date <= endDate:
                 if not transaction.tags:
                     # If the transaction has no tags, accumulate it to the "No Tag" category
-                    no_tag_amount += transaction.amount
+                    tag_amounts["Expenses"] += transaction.amount
                 else:
                     for tag in transaction.tags:
                         tag_name = tag['tag_name']
-                        tag_color = tag['color']  # Get the color for the tag
-
                         # Only include the tag if it's in the list of visible tags
-                        if tag_name in visible_tags:
-                            # Store the color and accumulate amounts
-                            if tag_name not in tag_amounts:
-                                tag_amounts[tag_name] = 0
-                                tag_colors[tag_name] = tag_color  # Assign the color to the tag
-                        
-                            tag_amounts[tag_name] += transaction.amount
+                        # Store the color and accumulate amounts
+                        if tag_name == "Savings":
+                            continue  # Ignore savings tag for this high-level breakdown"
 
-        # Add "No Tag" section if there are any transactions without tags
-        if no_tag_amount > 0:
-            tag_amounts["No Tag"] = no_tag_amount
-            tag_colors["No Tag"] = "#777"  # A neutral gray color for "No Tag"
+                        if tag_name == "Income":
+                            tag_amounts["Income"] += transaction.amount
+                        else:
+                            tag_amounts["Expenses"] += transaction.amount
 
         # Check if there are any valid amounts
         if len(tag_amounts) == 0:
@@ -79,28 +72,53 @@ class DonutChart(QtWidgets.QWidget):
             self.browser.setHtml("<h1>No data available for the selected date range.</h1>")
             return
 
-        # Prepare data for the donut chart
+        # Prepare data for the horizontal bar chart
         tags = list(tag_amounts.keys())
         amounts_orig = list(tag_amounts.values())
         amounts = [abs(x) for x in amounts_orig]
 
-        # Create the donut chart using Plotly
-        fig = px.pie(values=amounts, names=tags, title="Transaction Amounts by Tag", template="plotly_dark", hole=0.7)
-        
-        # Apply custom colors using the tag_colors dictionary
-        fig.update_traces(marker=dict(colors=[tag_colors[tag] for tag in tags]))
-        fig.update_traces(textposition='inside')
-        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-        fig.update_layout(paper_bgcolor='#19232D', plot_bgcolor='#19232D')
-        
+        # Calculate the total amount for percentage calculation
+        total_amount = sum(amounts)
+        percentages = [round((amount / total_amount) * 100) for amount in amounts]  # Rounded percentages
+        rounded_amounts = [f"${round(amount, 2)}" for amount in amounts]
+
+        # Create the horizontal bar chart using Plotly
+        fig = go.Figure()
+
+        # Add horizontal bars
+        fig.add_trace(go.Bar(
+            y=tags,
+            x=percentages,
+            orientation='h',  # Horizontal bars
+            marker=dict(color=[tag_colors[tag] for tag in tags]),  # Custom colors for each tag
+            text=rounded_amounts,  # Show the actual amount sum on the bars
+            textposition='inside',
+            hoverinfo='x+text',  # Show the percentage and amount on hover
+        ))
+
+        # Update layout settings
+        fig.update_layout(
+            title="Expenses VS Income Bar Chart",
+            xaxis_title="Percentage",
+            yaxis_title="Tag",
+            paper_bgcolor='#19232D',
+            plot_bgcolor='#19232D',
+            font=dict(color='white'),
+            xaxis=dict(tickformat='.1f%'),
+            margin=dict(l=100, r=50, t=50, b=50)
+        )
+
         js_code = '''<script>
                         document.body.style.backgroundColor = "#19232D";  // Set background color to black
                         document.body.style.margin = 0;
                         document.body.style.padding = 0;
                     </script>'''
 
+        # Get the HTML of the chart
         chart_html = fig.to_html(include_plotlyjs='cdn', full_html=False)
+
+        # Combine the HTML and the JS
         full_html = chart_html + js_code
 
-        # Embed the chart in the QWebEngineView
+        # Embed the chart with custom JS into the QWebEngineView
         self.browser.setHtml(full_html)

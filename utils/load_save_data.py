@@ -1,7 +1,7 @@
 import pickle
 import os
-from custom_types.observable import Observable
 from observables.unsaved_changes import unsaved_changes
+from custom_types.transactionObservable import TransactionObservable
 
 def load_pickle_file(file_path):
     """Load the pickle file if it exists."""
@@ -27,12 +27,12 @@ def save_to_pickle_file():
     global transactions_observable
     """Save the data to a pickle file."""
     with open(file_path, 'wb') as f:
-        pickle.dump(transactions_observable.get_data(), f)
+        pickle.dump(transactions_observable.get_expenses(), f)
         print("Data saved to pickle file successfully.")
         unsaved_changes.set_data(False)
 
 file_path = './data.pkl'
 data = load_pickle_file(file_path)
 
-transactions_observable = Observable()
+transactions_observable = TransactionObservable()
 transactions_observable.set_data(data)

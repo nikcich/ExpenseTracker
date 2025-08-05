@@ -30,7 +30,7 @@ class RadarChart(QtWidgets.QWidget):
         
     def show_graph(self):
         # Get the list of transactions
-        transactions = transactions_observable.get_data()
+        transactions = transactions_observable.get_expenses()
 
         startDate = self.start.get_data()
         endDate = self.end.get_data()
