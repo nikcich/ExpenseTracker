@@ -10,6 +10,9 @@ class TransactionObservable:
     def remove_observer(self, observer):
         self._observable.remove_observer(observer)
 
+    def _notify_observers(self):
+        self._observable._notify_observers()
+
     def set_data(self, data):
         self._observable.set_data(data)
 

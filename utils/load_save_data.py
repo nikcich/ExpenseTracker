@@ -27,7 +27,7 @@ def save_to_pickle_file():
     global transactions_observable
     """Save the data to a pickle file."""
     with open(file_path, 'wb') as f:
-        pickle.dump(transactions_observable.get_expenses(), f)
+        pickle.dump(transactions_observable.get_data(), f)
         print("Data saved to pickle file successfully.")
         unsaved_changes.set_data(False)
 
