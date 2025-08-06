@@ -1,30 +1,16 @@
 # csv_validator.py
 import csv
 from datetime import datetime
-from utils.csv_definitions import ColumnType
+from utils.csv_definitions import ColumnType, ColumnTypeParsers
 
 # Function to validate data types (this can be expanded to include more types)
 def validate_data(value, column_type):
-    if column_type == ColumnType.DATE:
-        try:
-            # Attempt to convert the value to a valid date format
-            datetime.strptime(value, "%m/%d/%Y")
-        except ValueError:
-            try:
-                # Attempt to convert the value to a valid date format
-                datetime.strptime(value, "%m/%d/%y")
-            except ValueError:
-                return False
-    elif column_type == ColumnType.FLOAT:
-        try:
-            # Remove currency symbols and commas before checking if it's a valid float
-            value = value.replace('$', '').replace(',', '').strip()
-            float(value)
-        except ValueError:
-            return False
-    elif column_type == ColumnType.STRING:
+    try:
+        parser = ColumnTypeParsers[column_type]
+        parser(value)
         return True
-    return True
+    except ValueError:
+        return False
 
 # Generic CSV Validation function
 def validate_csv(file_path, csv_definition):

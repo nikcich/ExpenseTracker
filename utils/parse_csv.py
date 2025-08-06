@@ -2,7 +2,7 @@ import csv
 from datetime import datetime
 from custom_types.Transaction import Transaction
 from utils.load_save_data import transactions_observable
-from utils.csv_definitions import ColumnType, Role
+from utils.csv_definitions import ColumnType, Role, ColumnTypeParsers
 import uuid
 import re
 
@@ -19,26 +19,8 @@ def loose_match_descriptions(a, b):
     )
 
 def get_column_data(value, column_type):
-    parsed_value = None
-    if column_type == ColumnType.DATE:
-        try:
-            # Attempt to convert the value to a valid date format
-            parsed_value = datetime.strptime(value, "%m/%d/%Y").strftime("%m/%d/%Y")
-        except ValueError:
-            try:
-                # Attempt to convert the value to a valid date format
-                parsed_value = datetime.strptime(value, "%m/%d/%y").strftime("%m/%d/%Y")
-            except ValueError:
-                raise ValueError("Invalid date format provided")
-    elif column_type == ColumnType.FLOAT:
-        try:
-            # Remove currency symbols and commas before checking if it's a valid float
-            parsed_value = float(value.replace('$', '').replace(',', '').strip())
-        except ValueError:
-            raise ValueError("Invalid amount provided")
-    elif column_type == ColumnType.STRING:
-        parsed_value = normalize(str(value))
-    return parsed_value
+    parser = ColumnTypeParsers[column_type]
+    return parser(value)
 
 def parse_csv_to_transactions(file_path, csv_definition):
     transactions = []
@@ -68,14 +50,14 @@ def parse_csv_to_transactions(file_path, csv_definition):
 
                 transaction_data['uuid'] = str(uuid.uuid4())
                 # Convert values based on the type defined in the csv_definition
-                if column_type == ColumnType.DATE and column_role == Role.DATE:
+                if column_role == Role.DATE:
                     try:
                         converted_value = get_column_data(value, column_type)
                         transaction_data['date'] = converted_value
                     except ValueError:
                         print(f"Error: Invalid date format in row: {row}")
                         continue
-                elif column_type == ColumnType.FLOAT and column_role == Role.AMOUNT:
+                elif column_role == Role.AMOUNT:
                     # Convert to float (assuming it's a currency)
                     try:
                         converted_value = get_column_data(value, column_type)
@@ -95,7 +77,7 @@ def parse_csv_to_transactions(file_path, csv_definition):
                             continue
                     if invert:
                         transaction_data['amount'] = -transaction_data['amount']
-                elif column_type == ColumnType.STRING and column_role == Role.DESCRIPTION:
+                elif column_role == Role.DESCRIPTION:
                     converted_value = get_column_data(value, column_type)
                     transaction_data['description'] = converted_value
 
