@@ -39,7 +39,7 @@ class FilteredTableView(QWidget):
 
         """Refresh the content of this tab."""
         # Update transaction count label
-        transactions = transactions_observable.get_expenses()
+        transactions = list(transactions_observable.get_data().values())
         visible_tags = visibleTags.get_data()
         startDate = self.start.get_data()
         endDate = self.end.get_data()
