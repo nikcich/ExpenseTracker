@@ -30,7 +30,8 @@ class HighLevelSavingsBarChart(QtWidgets.QWidget):
         
     def show_graph(self):
         # Get the list of transactions
-        transactions = transactions_observable.get_data()
+        transactions = list(transactions_observable.get_data().values())
+
 
         startDate = self.start.get_data()
         endDate = self.end.get_data()

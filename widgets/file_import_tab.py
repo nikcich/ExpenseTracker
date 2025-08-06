@@ -111,8 +111,8 @@ class FileImportTab(QWidget):
         file_path = self.label.text().replace("Selected file: ", "")
         if file_path and self.selected_file_definition is not None:
             transactions = parse_csv_to_transactions(file_path, self.selected_file_definition)
-            data = transactions_observable.get_expenses()
-            data.extend(transactions)
+            data = transactions_observable.get_data() or {}
+            data.update({t.uuid: t for t in transactions})
             transactions_observable.set_data(data)
             self.label.setText("No file selected")
             self.info_label.setText(f"Successfully parsed {len(transactions)} transactions")

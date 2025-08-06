@@ -131,11 +131,14 @@ class MultiDeleteConfirmationDialog(QDialog):
 
     def handle_yes(self):
         transactions = transactions_observable.get_data()
-        transactions[:] = [t for t in transactions if t.uuid not in self.selected_transactions]
 
+        for uuid in self.selected_transactions:
+            transactions.pop(uuid, None)
+
+        # Push changes
         transactions_observable.set_data(transactions)
         unsaved_changes.set_data(True)
-        self.accept()  
+        self.accept()
 
 class TransactionTable(QWidget):
     def __init__(self, parent, transactions, sliderPos):
@@ -253,14 +256,9 @@ class TransactionTable(QWidget):
 
     def match_transaction(self, uuid):
         if uuid:
-            matching_transactions = [
-                trans for trans in self.transactions
-                if (trans.uuid == uuid)
-            ]
-        if matching_transactions:
-            return matching_transactions[0]
-        else:
-            return None
+            transactions_map = transactions_observable.get_data()
+            return transactions_map[uuid]
+        return None
 
     def on_cell_double_clicked(self, row, column):
         if column == 0:

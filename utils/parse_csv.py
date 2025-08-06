@@ -42,7 +42,7 @@ def get_column_data(value, column_type):
 
 def parse_csv_to_transactions(file_path, csv_definition):
     transactions = []
-    data = transactions_observable.get_expenses()
+    data = list(transactions_observable.get_data().values())
     with open(file_path, mode='r', newline='') as file:
         csv_reader = csv.reader(file)
         
