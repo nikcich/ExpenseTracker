@@ -42,5 +42,9 @@ class Transaction:
         """Updates the source of the transaction"""
         self.source = new_source
 
+    def update_date(self, new_date):
+        """Updates the date of the transaction"""
+        self.date = new_date
+
 # Example of usage:
 # transaction = Transaction(tags=["Groceries", "Instacart"], date="02/02/2025", description="IC* INSTACART SAN FRANCISCO CA", amount=212.32, source="Credit Card")

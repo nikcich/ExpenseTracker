@@ -110,6 +110,32 @@ class MultiTagSelectionDialog(QDialog):
         transactions_observable._notify_observers()
         unsaved_changes.set_data(True)
 
+class MultiDeleteConfirmationDialog(QDialog):
+    def __init__(self, parent, selected_transactions):
+        super().__init__(parent)
+        self.selected_transactions = selected_transactions
+        self.setWindowTitle("Confirm Deletion")
+        message_label = QLabel("Are you sure you want to delete the selected transactions?")
+        yes_button = QPushButton("Yes")
+        cancel_button = QPushButton("Cancel")
+        yes_button.clicked.connect(self.handle_yes)
+        cancel_button.clicked.connect(self.reject)
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(yes_button)
+        button_layout.addWidget(cancel_button)
+        layout = QVBoxLayout()
+        layout.addWidget(message_label)
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+    def handle_yes(self):
+        transactions = transactions_observable.get_data()
+        transactions[:] = [t for t in transactions if t.uuid not in self.selected_transactions]
+
+        transactions_observable.set_data(transactions)
+        unsaved_changes.set_data(True)
+        self.accept()  
 
 class TransactionTable(QWidget):
     def __init__(self, parent, transactions, sliderPos):
@@ -135,16 +161,45 @@ class TransactionTable(QWidget):
         self.table_widget.cellDoubleClicked.connect(self.on_cell_double_clicked)
         self.table_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table_widget.customContextMenuRequested.connect(self.show_context_menu)
+        self.table_widget.itemChanged.connect(self.on_item_changed)
         self.refresh()
+
+    def on_item_changed(self, item):
+        row = item.row()
+        uuid = self.table_widget.item(row, 4)
+        date_text = self.table_widget.item(row, 1)
+        description_text = self.table_widget.item(row, 2)
+        amount_text = self.table_widget.item(row, 3)
+
+        qdate = QDate.fromString(date_text.text(), "yyyy-MM-dd")
+        date = qdate.toString("MM/dd/yyyy")
+        amount = float(amount_text.text().replace('$', '').replace(',', ''))
+        description = str(description_text.text())
+
+        transaction = self.match_transaction(uuid.text())
+
+        if transaction is not None and (transaction.date != date or transaction.description != description or transaction.amount != amount):
+            unsaved_changes.set_data(True)
+            transaction.update_amount(amount)
+            transaction.update_date(date)
+            transaction.update_description(description)
+            transactions_observable._notify_observers()
 
     def show_context_menu(self, pos):
         context_menu = QMenu(self)
-        tag_action = QAction("Select Tags for Selected Rows", self)
+        tag_action = QAction("Select Tags for Selected Row(s)", self)
+        delete_action = QAction("Delete Selected Row(s)", self)
+
         tag_action.triggered.connect(self.select_tags_for_selected_rows)
+        delete_action.triggered.connect(self.delete_selected_rows)
+
         context_menu.addAction(tag_action)
+        context_menu.addAction(delete_action)
+
         context_menu.exec_(self.table_widget.mapToGlobal(pos))
 
     def refresh(self):
+        self.table_widget.blockSignals(True)
         self.table_widget.setRowCount(len(self.transactions))
         self.table_widget.verticalScrollBar().setMaximum(len(self.transactions))
         self.table_widget.verticalScrollBar().setValue(self.sliderPos)
@@ -161,6 +216,7 @@ class TransactionTable(QWidget):
 
             tag_widget = self.create_tag_widget(transaction.tags)
             self.table_widget.setCellWidget(row, 0, tag_widget)
+        self.table_widget.blockSignals(False)
         self.table_widget.verticalScrollBar().setValue(self.sliderPos)
 
     def create_tag_widget(self, tags):
@@ -215,6 +271,15 @@ class TransactionTable(QWidget):
                 if transaction:
                     dialog = TagSelectionDialog(self, transaction)
                     dialog.exec_()
+
+    def delete_selected_rows(self):
+        selected_rows = self.table_widget.selectionModel().selectedRows()
+        selected_transactions = []
+        for row in selected_rows:
+            uuid = self.table_widget.item(row.row(), 4)
+            selected_transactions.append(uuid.text())
+        dialog = MultiDeleteConfirmationDialog(self, selected_transactions)
+        dialog.exec_()
 
     def select_tags_for_selected_rows(self):
         selected_rows = self.table_widget.selectionModel().selectedRows()
