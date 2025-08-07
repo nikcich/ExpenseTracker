@@ -2,6 +2,11 @@ from enum import Enum, auto
 from datetime import datetime
 import re
 
+SHEKEL_TO_DOLLARS_EXCHANGE = 3.5 # Default to 3.5
+
+def override_shekels_to_dollars_exchange(value):
+    SHEKEL_TO_DOLLARS_EXCHANGE = value
+
 def normalize(s):
     return re.sub(r'\s+', ' ', s.strip())
 
@@ -39,6 +44,12 @@ def parse_date_y(value):
 def parse_float(value):
     try:
         return float(value.replace('$', '').replace(',', '').strip())
+    except ValueError:
+        raise ValueError("Invalid amount provided")
+
+def parse_shekel(value):
+    try:
+        return float(value.replace('$', '').replace(',', '').strip()) * SHEKEL_TO_DOLLARS_EXCHANGE
     except ValueError:
         raise ValueError("Invalid amount provided")
     
