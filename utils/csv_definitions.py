@@ -9,6 +9,7 @@ class Role(Enum):
     DATE = auto()
     AMOUNT = auto()
     DESCRIPTION = auto()
+    NO_ROLE = auto()
 
 class ColumnType(Enum):
     DATE_Y = auto()
@@ -91,7 +92,7 @@ capital_csv_definition = {
     'columns': [
         {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
         {'type': ColumnType.DATE_y, 'index':   2, 'role': Role.DATE},  # Date (date format)
-        {'type': ColumnType.TYPE_FLAG, 'index': 3},    # Type (credit/debit)
+        {'type': ColumnType.TYPE_FLAG, 'index': 3, 'role': Role.NO_ROLE},    # Type (credit/debit)
         {'type': ColumnType.FLOAT, 'index':  4, 'role': Role.AMOUNT}, # Amount (float)
     ],
 }

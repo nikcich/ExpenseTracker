@@ -42,6 +42,10 @@ def parse_csv_to_transactions(file_path, csv_definition):
                 invert = col_def['invert'] if 'invert' in col_def else False
                 value = row[column_index]
 
+                if column_role == Role.NO_ROLE:
+                    # Skip columns with no specific role
+                    continue
+
                 col_with_type_flag = next(
                     (col for col in csv_definition['columns'] if col['type'] == ColumnType.TYPE_FLAG),
                     None

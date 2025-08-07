@@ -1,7 +1,7 @@
 # csv_validator.py
 import csv
 from datetime import datetime
-from utils.csv_definitions import ColumnType, ColumnTypeParsers
+from utils.csv_definitions import ColumnTypeParsers
 
 # Function to validate data types (this can be expanded to include more types)
 def validate_data(value, column_type):
