@@ -2,6 +2,12 @@ from enum import Enum, auto
 from datetime import datetime
 import re
 
+SHEKEL_TO_DOLLARS_EXCHANGE = 3.5 # Default to 3.5
+
+def override_shekels_to_dollars_exchange(value):
+    global SHEKEL_TO_DOLLARS_EXCHANGE
+    SHEKEL_TO_DOLLARS_EXCHANGE = value
+
 def normalize(s):
     return re.sub(r'\s+', ' ', s.strip())
 
@@ -14,9 +20,11 @@ class Role(Enum):
 class ColumnType(Enum):
     DATE_Y = auto()
     DATE_y = auto()
+    DATE_JEW = auto()
     STRING = auto()
     FLOAT = auto()
     TYPE_FLAG = auto()
+    SHEKEL = auto()
 
 def parse_date_fmt(value, fmt):
     try:
@@ -35,10 +43,22 @@ def parse_date_y(value):
         return parse_date_fmt(value, "%m/%d/%y")
     except ValueError:
         raise ValueError("Invalid date format provided; y")
+
+def parse_date_jew(value):
+    try:
+        return parse_date_fmt(value, "%d-%m-%Y")
+    except ValueError:
+        raise ValueError("Invalid date format provided; jew")
     
 def parse_float(value):
     try:
         return float(value.replace('$', '').replace(',', '').strip())
+    except ValueError:
+        raise ValueError("Invalid amount provided")
+
+def parse_shekel(value):
+    try:
+        return float(value.replace('$', '').replace(',', '').strip()) * SHEKEL_TO_DOLLARS_EXCHANGE
     except ValueError:
         raise ValueError("Invalid amount provided")
     
@@ -54,6 +74,8 @@ ColumnTypeParsers = {
     ColumnType.STRING: parse_string,
     ColumnType.FLOAT: parse_float,
     ColumnType.TYPE_FLAG: parse_flag,
+    ColumnType.SHEKEL: parse_shekel,
+    ColumnType.DATE_JEW: parse_date_jew
 }
 
 wf_csv_definition = {
@@ -62,7 +84,7 @@ wf_csv_definition = {
     'columns': [
         {'type': ColumnType.DATE_Y, 'index': 2, 'role': Role.DATE},    # Date (date format)
         {'type': ColumnType.STRING, 'index': 5, 'role': Role.DESCRIPTION},  # Description (string)
-        {'type': ColumnType.FLOAT, 'index': 7, 'role': Role.AMOUNT},   # Amount (currency/float)
+        {'type': ColumnType.FLOAT, 'index': 7, 'role': Role.AMOUNT}   # Amount (currency/float)
     ],
 }
 
@@ -72,7 +94,7 @@ wf_activity_csv_definition = {
     'columns': [
         {'type': ColumnType.DATE_Y, 'index': 0, 'role': Role.DATE },    # Date (date format)
         {'type': ColumnType.FLOAT, 'index': 1, 'role': Role.AMOUNT, 'invert': True},   # Amount (currency/float), invert to multiple by -1. Expense tracker means + is anticipated to be expenses and - is income based on frame of reference
-        {'type': ColumnType.STRING, 'index': 4, 'role': Role.DESCRIPTION},  # Description
+        {'type': ColumnType.STRING, 'index': 4, 'role': Role.DESCRIPTION}  # Description
     ],
 }
 
@@ -82,7 +104,7 @@ amex_csv_definition = {
     'columns': [
         {'type': ColumnType.DATE_Y, 'index': 0, 'role': Role.DATE},      # Date (date format)
         {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
-        {'type': ColumnType.FLOAT, 'index': 2, 'role': Role.AMOUNT},     # Amount (currency/float)
+        {'type': ColumnType.FLOAT, 'index': 2, 'role': Role.AMOUNT}     # Amount (currency/float)
     ],
 }
 
@@ -93,9 +115,19 @@ capital_csv_definition = {
         {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
         {'type': ColumnType.DATE_y, 'index':   2, 'role': Role.DATE},  # Date (date format)
         {'type': ColumnType.TYPE_FLAG, 'index': 3, 'role': Role.NO_ROLE},    # Type (credit/debit)
-        {'type': ColumnType.FLOAT, 'index':  4, 'role': Role.AMOUNT}, # Amount (float)
+        {'type': ColumnType.FLOAT, 'index':  4, 'role': Role.AMOUNT} # Amount (float)
     ],
 }
 
+jewland_csv_definitions = {
+    'name': 'Bank Leumi Activity Report',
+    'hasHeaders': True,
+    'columns': [
+        {'type': ColumnType.DATE_JEW, 'index': 0, 'role': Role.DATE},  # Date (date format)
+        {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
+        {'type': ColumnType.SHEKEL, 'index':  5, 'role': Role.AMOUNT} # Amount (float)
+    ]
+}
+
 # Always add new definitions to this list
-all_csv_definitions = [wf_csv_definition, wf_activity_csv_definition, amex_csv_definition, capital_csv_definition]
+all_csv_definitions = [wf_csv_definition, wf_activity_csv_definition, amex_csv_definition, capital_csv_definition, jewland_csv_definitions]

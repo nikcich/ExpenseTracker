@@ -6,6 +6,7 @@ from utils.csv_definitions import all_csv_definitions
 from utils.parse_csv import parse_csv_to_transactions
 from utils.load_save_data import transactions_observable
 from observables.unsaved_changes import unsaved_changes
+from widgets.shekel_conversion import ShekelConversionWindow 
 
 class FileImportTab(QWidget):
     def __init__(self, parent=None):
@@ -77,6 +78,11 @@ class FileImportTab(QWidget):
         self.parse_button.setVisible(False)
         self.layout.addWidget(self.parse_button)
 
+        # Shekel Conversion Window (initially hidden)
+        self.shekel_conversion_window = ShekelConversionWindow(self)
+        self.shekel_conversion_window.setVisible(False)
+        self.layout.addWidget(self.shekel_conversion_window)
+
         # Refresh observer (keeping the transaction data updated)
         transactions_observable.add_observer(self.refresh)
 
@@ -85,6 +91,7 @@ class FileImportTab(QWidget):
         # Clear any widget updates
         self.info_label.setText("")
         self.parse_button.setVisible(False)
+        self.shekel_conversion_window.setVisible(False)
 
     def upload_file(self):
         """Handle file upload and validation."""
@@ -92,19 +99,28 @@ class FileImportTab(QWidget):
         
         if file_path:
             matching_csv = None
+            validated = False
+
             for csv_def in all_csv_definitions:
                 if validate_csv(file_path, csv_def):
+                    validated = True
+                    print("Found matched CSV definition:", csv_def['name']) 
                     matching_csv = csv_def
                     break
+            
+            if not validated:
+                print("Error: CSV file did not match any known definition.")
 
             if matching_csv is not None:
                 self.info_label.setText(f"Successfully uploaded {matching_csv['name']}")
                 self.label.setText(f"Selected file: {file_path}")
                 self.parse_button.setVisible(True)
                 self.selected_file_definition = matching_csv
+                self.shekel_conversion_window.setVisible(True)
             else:
                 self.info_label.setText("Invalid file format")
                 self.selected_file_definition = None
+                self.shekel_conversion_window.setVisible(False)
 
     def parse_csv(self):
         """Parse the CSV file and create Transaction objects."""
