@@ -99,11 +99,6 @@ class FileImportTab(QWidget):
         
         if file_path:
             matching_csv = None
-            for csv_def in all_csv_definitions:
-                if validate_csv(file_path, csv_def):
-                    matching_csv = csv_def
-                    break
-
             validated = False
 
             for csv_def in all_csv_definitions:
