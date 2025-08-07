@@ -28,7 +28,7 @@ def validate_csv(file_path, csv_definition):
                 row_number += 1
                 # Check if the row has the correct number of columns
                 if len(row) < len(csv_definition['columns']):
-                    print(f"Error: Row {row_number} has an incorrect number of columns.")
+                    # print(f"Error: Row {row_number} has an incorrect number of columns.")
                     return False
                 
                 # Validate each column based on the definition
@@ -36,11 +36,10 @@ def validate_csv(file_path, csv_definition):
                     column_index = col_def['index']
                     column_type = col_def['type']
                     if not validate_data(row[column_index], column_type):
-                        print(f"Error: Row {row_number} has invalid data in column {col_def}.")
-                        print(row[column_index], column_type)
+                        # print(f"Error: Row {row_number} has invalid data in column {col_def}.")
+                        # print(row[column_index], column_type)
                         return False
-            
-            print("CSV file is valid.")
+                    
             return True
             
     except FileNotFoundError:

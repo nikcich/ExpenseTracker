@@ -104,6 +104,18 @@ class FileImportTab(QWidget):
                     matching_csv = csv_def
                     break
 
+            validated = False
+
+            for csv_def in all_csv_definitions:
+                if validate_csv(file_path, csv_def):
+                    validated = True
+                    print("Found matched CSV definition:", csv_def['name']) 
+                    matching_csv = csv_def
+                    break
+            
+            if not validated:
+                print("Error: CSV file did not match any known definition.")
+
             if matching_csv is not None:
                 self.info_label.setText(f"Successfully uploaded {matching_csv['name']}")
                 self.label.setText(f"Selected file: {file_path}")
