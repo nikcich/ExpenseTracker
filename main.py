@@ -22,6 +22,7 @@ from widgets.heat import DailyHeatmapChart
 from widgets.month_stacked import MonthlyStackedBarChart
 from widgets.filtered_table_view import FilteredTableView
 from widgets.month_income_bar import MonthlyIncomeBarChart
+from widgets.average_monthly_stacked import AverageMonthlyStackedBarChart
 
 sys.path.append('./')
 
@@ -45,6 +46,7 @@ class App(QMainWindow):
             "Monthly Bar Chart": GenericDockWidget("Monthly Bar Chart", ChartWidget(MonthlyBarChart(start, end), self), self),
             "Daily Heatmap": GenericDockWidget("Daily Heatmap", DailyHeatmapChart(start, end), self),
             "Monthly Stacked By Tags": GenericDockWidget("Monthly Stacked By Tags", MonthlyStackedBarChart(start, end), self),
+            "Average Monthly Stacked By Tags": GenericDockWidget("Average Monthly Stacked By Tags", AverageMonthlyStackedBarChart(start, end), self),
             "Monthly Income Bar Chart": GenericDockWidget("Monthly Income Bar Chart", MonthlyIncomeBarChart(start, end), self),
             "Filtered Table": GenericDockWidget("Filtered Table", ChartWidget(FilteredTableView(self, start, end), self), self),
         }
