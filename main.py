@@ -88,6 +88,7 @@ class App(QMainWindow):
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
+        menu_bar.setNativeMenuBar(False)
         file_menu = menu_bar.addMenu("File")
 
         save_action = QAction("Save", self)
