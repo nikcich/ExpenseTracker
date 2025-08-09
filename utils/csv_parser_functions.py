@@ -5,6 +5,50 @@ from utils.csv_type_enums import ColumnType
 
 SHEKEL_TO_DOLLARS_EXCHANGE = 3.5 # Default to 3.5
 
+CURRENCY_SYMBOLS = [
+    "$",   # Dollar
+    "¢",   # Cent
+    "£",   # Pound
+    "¤",   # Generic currency sign
+    "¥",   # Yen / Yuan
+    "₠",   # Euro-currency
+    "₡",   # Colon
+    "₢",   # Cruzeiro
+    "₣",   # French Franc
+    "₤",   # Lira
+    "₥",   # Mill
+    "₦",   # Naira
+    "₧",   # Peseta
+    "₨",   # Rupee
+    "₩",   # Won
+    "₪",   # Shekel
+    "₫",   # Dong
+    "€",   # Euro
+    "₭",   # Kip
+    "₮",   # Tugrik
+    "₯",   # Drachma
+    "₰",   # German Penny
+    "₱",   # Peso
+    "₲",   # Guarani
+    "₳",   # Austral
+    "₴",   # Hryvnia
+    "₵",   # Cedi
+    "₶",   # Livre Tournois
+    "₷",   # Spesmilo
+    "₸",   # Tenge
+    "₺",   # Turkish Lira
+    "₻",   # Nordic Mark
+    "₼",   # Azerbaijani Manat
+    "₽",   # Russian Ruble
+    "₾",   # Georgian Lari
+    "₿"    # Bitcoin
+]
+
+CURRENCY_PATTERN = "[" + "".join(re.escape(sym) for sym in CURRENCY_SYMBOLS) + "]"
+
+def remove_currency_symbols(text):
+    return re.sub(CURRENCY_PATTERN, "", text)
+
 def override_shekels_to_dollars_exchange(value):
     global SHEKEL_TO_DOLLARS_EXCHANGE
     SHEKEL_TO_DOLLARS_EXCHANGE = value
@@ -38,15 +82,19 @@ def parse_date_jew(value):
     
 def parse_float(value):
     try:
-        return float(value.replace('$', '').replace(',', '').strip())
+        new_value = float(remove_currency_symbols(value).replace(',', '').strip())
     except ValueError:
-        raise ValueError("Invalid amount provided")
+        new_value = 0 # default to 0 if string parsing goes wrong/null
+    return new_value
+        
 
 def parse_shekel(value):
     try:
-        return float(value.replace('$', '').replace(',', '').strip()) * SHEKEL_TO_DOLLARS_EXCHANGE
+        new_value = float(remove_currency_symbols(value).replace(',', '').strip())
+        new_value * SHEKEL_TO_DOLLARS_EXCHANGE
     except ValueError:
-        raise ValueError("Invalid amount provided")
+        new_value = 0 # defaults to 0 if string parsing goes wrong/null
+    return new_value
     
 def parse_string(value):
     return normalize(str(value))
