@@ -1,138 +1,92 @@
-from enum import Enum, auto
-from datetime import datetime
-import re
-
-SHEKEL_TO_DOLLARS_EXCHANGE = 3.5 # Default to 3.5
-
-def override_shekels_to_dollars_exchange(value):
-    global SHEKEL_TO_DOLLARS_EXCHANGE
-    SHEKEL_TO_DOLLARS_EXCHANGE = value
-
-def normalize(s):
-    return re.sub(r'\s+', ' ', s.strip())
-
-class Role(Enum):
-    DATE = auto()
-    AMOUNT = auto()
-    DESCRIPTION = auto()
-    NO_ROLE = auto()
-
-class ColumnType(Enum):
-    DATE_Y = auto()
-    DATE_y = auto()
-    DATE_JEW = auto()
-    STRING = auto()
-    FLOAT = auto()
-    TYPE_FLAG = auto()
-    AMOUNT_SECOND = auto()
-    CURRENCY_FLAG = auto()
-    SHEKEL = auto()
-
-def parse_date_fmt(value, fmt):
-    try:
-        return datetime.strptime(value, fmt).strftime("%m/%d/%Y")
-    except ValueError:
-        raise ValueError()
-
-def parse_date_Y(value):
-    try:
-        return parse_date_fmt(value, "%m/%d/%Y")
-    except ValueError:
-        raise ValueError("Invalid date format provided; Y")
-
-def parse_date_y(value):
-    try:
-        return parse_date_fmt(value, "%m/%d/%y")
-    except ValueError:
-        raise ValueError("Invalid date format provided; y")
-
-def parse_date_jew(value):
-    try:
-        return parse_date_fmt(value, "%d-%m-%Y")
-    except ValueError:
-        raise ValueError("Invalid date format provided; jew")
-    
-def parse_float(value):
-    try:
-        return float(value.replace('$', '').replace(',', '').strip())
-    except ValueError:
-        raise ValueError("Invalid amount provided")
-
-def parse_shekel(value):
-    try:
-        return float(value.replace('$', '').replace(',', '').strip()) * SHEKEL_TO_DOLLARS_EXCHANGE
-    except ValueError:
-        raise ValueError("Invalid amount provided")
-    
-def parse_string(value):
-    return normalize(str(value))
-
-def parse_flag(value):
-    return normalize(str(value)).lower()
-
-ColumnTypeParsers = {
-    ColumnType.DATE_Y: parse_date_Y,
-    ColumnType.DATE_y: parse_date_y,
-    ColumnType.STRING: parse_string,
-    ColumnType.FLOAT: parse_float,
-    ColumnType.TYPE_FLAG: parse_flag,
-    ColumnType.SHEKEL: parse_shekel,
-    ColumnType.DATE_JEW: parse_date_jew,
-    ColumnType.CURRENCY_FLAG: parse_string,
-    ColumnType.AMOUNT_SECOND: parse_float
-}
+from utils.csv_meta_handlers import amount_secondary_handler, credit_type_handler
+from utils.csv_type_enums import ColumnType, Role
 
 wf_csv_definition = {
     'name': 'Wells Fargo Spending Report',
     'hasHeaders': True,
-    'columns': [
-        {'type': ColumnType.DATE_Y, 'index': 2, 'role': Role.DATE},    # Date (date format)
-        {'type': ColumnType.STRING, 'index': 5, 'role': Role.DESCRIPTION},  # Description (string)
-        {'type': ColumnType.FLOAT, 'index': 7, 'role': Role.AMOUNT}   # Amount (currency/float)
-    ],
+    'columns': {
+        Role.DATE: {'type': ColumnType.DATE_Y, 'index': 2},
+        Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 5},
+        Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 7}
+    },
+    'metadata': {
+        Role.DATE: [],
+        Role.DESCRIPTION: [],
+        Role.AMOUNT: []
+    }
 }
 
 wf_activity_csv_definition = {
     'name': 'Wells Fargo Activity Report',
-    'hasHeaders': False,
-    'columns': [
-        {'type': ColumnType.DATE_Y, 'index': 0, 'role': Role.DATE },    # Date (date format)
-        {'type': ColumnType.FLOAT, 'index': 1, 'role': Role.AMOUNT, 'invert': True},   # Amount (currency/float), invert to multiple by -1. Expense tracker means + is anticipated to be expenses and - is income based on frame of reference
-        {'type': ColumnType.STRING, 'index': 4, 'role': Role.DESCRIPTION}  # Description
-    ],
+    'hasHeaders': True,
+    'columns': {
+        Role.DATE: {'type': ColumnType.DATE_Y, 'index': 0},
+        Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 1, 'invert': True},
+        Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 4}
+    },
+    'metadata': {
+        Role.DATE: [],
+        Role.DESCRIPTION: [],
+        Role.AMOUNT: []
+    }
 }
 
 amex_csv_definition = {
     'name': 'American Express Spending Report',
     'hasHeaders': True,
-    'columns': [
-        {'type': ColumnType.DATE_Y, 'index': 0, 'role': Role.DATE},      # Date (date format)
-        {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
-        {'type': ColumnType.FLOAT, 'index': 2, 'role': Role.AMOUNT}     # Amount (currency/float)
-    ],
+    'columns': {
+        Role.DATE: {'type': ColumnType.DATE_Y, 'index': 0},
+        Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 1},
+        Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 2}
+    },
+    'metadata': {
+        Role.DATE: [],
+        Role.DESCRIPTION: [],
+        Role.AMOUNT: []
+    }
 }
 
 capital_csv_definition = {
     'name': 'Capital One Activity Report',
     'hasHeaders': True,
-    'columns': [
-        {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
-        {'type': ColumnType.DATE_y, 'index':   2, 'role': Role.DATE},  # Date (date format)
-        {'type': ColumnType.TYPE_FLAG, 'index': 3, 'role': Role.NO_ROLE},    # Type (credit/debit)
-        {'type': ColumnType.FLOAT, 'index':  4, 'role': Role.AMOUNT} # Amount (float)
-    ],
+    'columns': {
+        Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 1},
+        Role.DATE: {'type': ColumnType.DATE_y, 'index': 2},
+        Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 4, 'invert': True}
+    },
+    'metadata': {
+        Role.DATE: [],
+        Role.DESCRIPTION: [],
+        Role.AMOUNT: [
+            {
+                'handler': credit_type_handler,
+                'columns': [{'type': ColumnType.TYPE_FLAG, 'index': 3}]
+            }
+        ]
+    }
 }
 
 jewland_csv_definitions = {
     'name': 'Bank Leumi Activity Report',
     'hasHeaders': True,
-    'columns': [
-        {'type': ColumnType.DATE_JEW, 'index': 0, 'role': Role.DATE},  # Date (date format)
-        {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
-        {'type': ColumnType.SHEKEL, 'index': 5, 'role': Role.AMOUNT}, # Amount (float)
-        {'type': ColumnType.AMOUNT_SECOND, 'index': 7, 'role': Role.NO_ROLE}, # Dollars if any
-        {'type': ColumnType.CURRENCY_FLAG, 'index': 8, 'role': Role.NO_ROLE} # Currency flag
-    ]
+    'columns': {
+        Role.DATE: {'type': ColumnType.DATE_JEW, 'index': 0 },
+        Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 1 },
+        Role.AMOUNT: {'type': ColumnType.SHEKEL, 'index': 5 }
+    },
+    'metadata': {
+        Role.DATE: [],
+        Role.DESCRIPTION: [],
+        Role.AMOUNT: [
+            { 
+                'handler': amount_secondary_handler, 
+                'columns': [
+                    {'type': ColumnType.AMOUNT_SECOND, 'index': 7},
+                    {'type': ColumnType.CURRENCY_FLAG, 'index': 8,}
+                ]
+            }
+        ]
+    }
 }
 
 # Always add new definitions to this list

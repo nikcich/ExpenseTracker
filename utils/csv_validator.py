@@ -1,7 +1,9 @@
 # csv_validator.py
 import csv
-from datetime import datetime
-from utils.csv_definitions import ColumnTypeParsers
+from utils.csv_parser_functions import ColumnTypeParsers
+from utils.csv_definitions import Role
+from utils.csv_parser_functions import get_column_data
+
 
 # Function to validate data types (this can be expanded to include more types)
 def validate_data(value, column_type):
@@ -11,6 +13,15 @@ def validate_data(value, column_type):
         return True
     except ValueError:
         return False
+
+def validate_metadata(meta_def, row, value):
+        try:
+            meta_cols = meta_def['columns']
+            handler = meta_def['handler']
+            handler(meta_cols, row, value)
+            return True
+        except ValueError:
+            return False
 
 # Generic CSV Validation function
 def validate_csv(file_path, csv_definition):
@@ -31,15 +42,26 @@ def validate_csv(file_path, csv_definition):
                     # print(f"Error: Row {row_number} has an incorrect number of columns.")
                     return False
                 
+                columns = csv_definition['columns']
+                meta = csv_definition['metadata']
+
                 # Validate each column based on the definition
-                for col_def in csv_definition['columns']:
+                for role in Role:
+                    col_def = columns[role]
+                    meta_def = meta[role]
+                    if not col_def:
+                        return False
                     column_index = col_def['index']
                     column_type = col_def['type']
                     if not validate_data(row[column_index], column_type):
-                        # print(f"Error: Row {row_number} has invalid data in column {col_def}.")
-                        # print(row[column_index], column_type)
                         return False
                     
+                    if len(meta_def) > 0:
+                        for meta_item in meta_def:
+                            value = get_column_data(row[column_index], column_type)
+                            if not validate_metadata(meta_item, row, value):
+                                return False
+                
             return True
             
     except FileNotFoundError:
