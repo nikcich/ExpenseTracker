@@ -80,6 +80,7 @@ class HighLevelSavingsBarChart(QtWidgets.QWidget):
 
         # Calculate the total amount for percentage calculation
         total_amount = sum(amounts)
+        total_amount = total_amount if total_amount != 0 else 1  # Avoid division by zero
         percentages = [round((amount / total_amount) * 100) for amount in amounts]  # Rounded percentages
         rounded_amounts = [f"${round(amount, 2)}" for amount in amounts]
 
