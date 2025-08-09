@@ -46,6 +46,9 @@ def parse_csv_to_transactions(file_path, csv_definition):
             None
         )
 
+        has_other_currency = col_with_currency is not None
+        has_credit_debit_header = col_with_type_flag is not None
+
         # Iterate through the rows of the CSV (excluding header)
         for row in csv_reader:
             # Create a dictionary to store parsed transaction data
@@ -61,9 +64,6 @@ def parse_csv_to_transactions(file_path, csv_definition):
                     # Skip columns with no specific role
                     # Also skip if it has amount second, it is handled in regular amount iteration
                     continue
-
-                has_other_currency = col_with_currency is not None
-                has_credit_debit_header = col_with_type_flag is not None
 
                 transaction_data['uuid'] = str(uuid.uuid4())
                 # Convert values based on the type defined in the csv_definition
