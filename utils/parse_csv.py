@@ -42,15 +42,28 @@ def parse_csv_to_transactions(file_path, csv_definition):
                 invert = col_def['invert'] if 'invert' in col_def else False
                 value = row[column_index]
 
-                if column_role == Role.NO_ROLE:
+                if column_role == Role.NO_ROLE or column_role == Role.AMOUNT_SECOND:
                     # Skip columns with no specific role
+                    # Also skip if it has amount second, it is handled in regular amount iteration
                     continue
 
                 col_with_type_flag = next(
                     (col for col in csv_definition['columns'] if col['type'] == ColumnType.TYPE_FLAG),
                     None
                 )
-                hasCreditDebitHeader = col_with_type_flag is not None
+
+                col_with_currency = next(
+                    (col for col in csv_definition['columns'] if col['role'] == Role.CURRENCY),
+                    None
+                )
+
+                col_with_second_amount = next(
+                    (col for col in csv_definition['columns'] if col['role'] == Role.AMOUNT_SECOND),
+                    None
+                )
+
+                has_other_currency = col_with_currency is not None
+                has_credit_debit_header = col_with_type_flag is not None
 
                 transaction_data['uuid'] = str(uuid.uuid4())
                 # Convert values based on the type defined in the csv_definition
@@ -70,7 +83,7 @@ def parse_csv_to_transactions(file_path, csv_definition):
                         print(f"Error: Invalid amount format in row: {row}")
                         continue
 
-                    if hasCreditDebitHeader:
+                    if has_credit_debit_header:
                         try:
                             creditDebitHeaderIndex = col_with_type_flag['index']
                             creditDebitHeaderValue = row[creditDebitHeaderIndex]
@@ -79,6 +92,16 @@ def parse_csv_to_transactions(file_path, csv_definition):
                         except ValueError:
                             print(f"Error: Invalid credit/debit header format in row: {row}")
                             continue
+                    
+                    if has_other_currency:
+                        currency_header_index = col_with_currency['index']
+                        currency_header_value = row[currency_header_index]
+                        # if the other currency column is provided and the amount exists, it will override the amount
+                        if str(currency_header_value) == '$' and col_with_second_amount:
+                            second_amount_value = row[col_with_second_amount['index']]
+                            converted_value = get_column_data(second_amount_value, col_with_second_amount['type'])
+                            transaction_data['amount'] = converted_value
+                    
                     if invert:
                         transaction_data['amount'] = -transaction_data['amount']
                 elif column_role == Role.DESCRIPTION:

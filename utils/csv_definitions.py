@@ -14,7 +14,9 @@ def normalize(s):
 class Role(Enum):
     DATE = auto()
     AMOUNT = auto()
+    AMOUNT_SECOND = auto()
     DESCRIPTION = auto()
+    CURRENCY = auto()
     NO_ROLE = auto()
 
 class ColumnType(Enum):
@@ -119,13 +121,25 @@ capital_csv_definition = {
     ],
 }
 
+# jewland_csv_definitions = {
+#     'name': 'Bank Leumi Activity Report',
+#     'hasHeaders': True,
+#     'columns': [
+#         {'type': ColumnType.DATE_JEW, 'index': 0, 'role': Role.DATE},  # Date (date format)
+#         {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
+#         {'type': ColumnType.SHEKEL, 'index':  5, 'role': Role.AMOUNT} # Amount (float)
+#     ]
+# }
+
 jewland_csv_definitions = {
     'name': 'Bank Leumi Activity Report',
     'hasHeaders': True,
     'columns': [
         {'type': ColumnType.DATE_JEW, 'index': 0, 'role': Role.DATE},  # Date (date format)
         {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
-        {'type': ColumnType.SHEKEL, 'index':  5, 'role': Role.AMOUNT} # Amount (float)
+        {'type': ColumnType.SHEKEL, 'index': 5, 'role': Role.AMOUNT}, # Amount (float)
+        {'type': ColumnType.FLOAT, 'index': 7, 'role': Role.AMOUNT_SECOND}, # Dollars if any
+        {'type': ColumnType.STRING, 'index': 8, 'role': Role.CURRENCY} # Currency
     ]
 }
 
