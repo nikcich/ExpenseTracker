@@ -1,11 +1,11 @@
-from utils.csv_meta_handlers import amount_secondary_handler, credit_type_handler
+from utils.csv_meta_handlers import amount_secondary_handler, credit_type_handler, credit_column_handler
 from utils.csv_type_enums import ColumnType, Role
 
 wf_csv_definition = {
     'name': 'Wells Fargo Spending Report',
     'hasHeaders': True,
     'columns': {
-        Role.DATE: {'type': ColumnType.DATE_Y, 'index': 2},
+        Role.DATE: {'type': ColumnType.DATE, 'index': 2},
         Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 5},
         Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 7}
     },
@@ -20,7 +20,7 @@ wf_activity_csv_definition = {
     'name': 'Wells Fargo Activity Report',
     'hasHeaders': True,
     'columns': {
-        Role.DATE: {'type': ColumnType.DATE_Y, 'index': 0},
+        Role.DATE: {'type': ColumnType.DATE, 'index': 0},
         Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 1, 'invert': True},
         Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 4}
     },
@@ -35,7 +35,7 @@ amex_csv_definition = {
     'name': 'American Express Spending Report',
     'hasHeaders': True,
     'columns': {
-        Role.DATE: {'type': ColumnType.DATE_Y, 'index': 0},
+        Role.DATE: {'type': ColumnType.DATE, 'index': 0},
         Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 1},
         Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 2}
     },
@@ -51,7 +51,7 @@ capital_csv_definition = {
     'hasHeaders': True,
     'columns': {
         Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 1},
-        Role.DATE: {'type': ColumnType.DATE_y, 'index': 2},
+        Role.DATE: {'type': ColumnType.DATE, 'index': 2},
         Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 4}
     },
     'metadata': {
@@ -66,11 +66,31 @@ capital_csv_definition = {
     }
 }
 
+capital_credit_csv_definition = {
+    'name': 'Capital One SavorOne Credit Report',
+    'hasHeaders': True,
+    'columns': {
+        Role.DATE: {'type': ColumnType.DATE, 'index': 0},
+        Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 3},
+        Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 5}
+    },
+    'metadata': {
+        Role.DATE: [],
+        Role.DESCRIPTION: [],
+        Role.AMOUNT: [
+            {
+                'handler': credit_column_handler,
+                'columns': [{'type': ColumnType.FLOAT, 'index': 6}]
+            }
+        ]
+    }
+}
+
 jewland_csv_definitions = {
     'name': 'Bank Leumi Activity Report',
     'hasHeaders': True,
     'columns': {
-        Role.DATE: {'type': ColumnType.DATE_JEW, 'index': 0 },
+        Role.DATE: {'type': ColumnType.DATE, 'index': 0 },
         Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 1 },
         Role.AMOUNT: {'type': ColumnType.SHEKEL, 'index': 5 }
     },
@@ -90,4 +110,4 @@ jewland_csv_definitions = {
 }
 
 # Always add new definitions to this list
-all_csv_definitions = [wf_csv_definition, wf_activity_csv_definition, amex_csv_definition, capital_csv_definition, jewland_csv_definitions]
+all_csv_definitions = [wf_csv_definition, wf_activity_csv_definition, amex_csv_definition, capital_credit_csv_definition, capital_csv_definition, jewland_csv_definitions]

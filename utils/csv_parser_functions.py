@@ -60,25 +60,22 @@ def parse_date_fmt(value, fmt):
     try:
         return datetime.strptime(value, fmt).strftime("%m/%d/%Y")
     except ValueError:
-        raise ValueError()
+        return None
 
-def parse_date_Y(value):
-    try:
-        return parse_date_fmt(value, "%m/%d/%Y")
-    except ValueError:
-        raise ValueError("Invalid date format provided; Y")
-
-def parse_date_y(value):
-    try:
-        return parse_date_fmt(value, "%m/%d/%y")
-    except ValueError:
-        raise ValueError("Invalid date format provided; y")
-
-def parse_date_jew(value):
-    try:
-        return parse_date_fmt(value, "%d-%m-%Y")
-    except ValueError:
-        raise ValueError("Invalid date format provided; jew")
+def parse_date(value):
+    formats = [
+        "%m/%d/%Y",
+        "%m/%d/%y",
+        "%d-%m-%Y",
+        "%Y-%m-%d"
+    ]
+    
+    for fmt in formats:
+        parsed = parse_date_fmt(value, fmt)
+        if parsed is not None:
+            return parsed
+    
+    raise ValueError(f"Date format not recognized: {value}")
     
 def parse_float(value):
     try:
@@ -104,12 +101,10 @@ def parse_flag(value):
 
 ColumnTypeParsers = {
     # Standard column types
-    ColumnType.DATE_Y: parse_date_Y,
-    ColumnType.DATE_y: parse_date_y,
+    ColumnType.DATE: parse_date,
     ColumnType.STRING: parse_string,
     ColumnType.FLOAT: parse_float,
     ColumnType.SHEKEL: parse_shekel,
-    ColumnType.DATE_JEW: parse_date_jew,
     # Metadata column types
     ColumnType.TYPE_FLAG: parse_flag,
     ColumnType.CURRENCY_FLAG: parse_string,

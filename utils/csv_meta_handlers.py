@@ -28,3 +28,9 @@ def amount_secondary_handler(meta_cols, row, value):
     if is_dollar:
         return amount_value
     return value
+
+def credit_column_handler(meta_cols, row, value):
+    column_value = get_column_value(meta_cols[0], row)
+    if column_value is not None and isinstance(column_value, float) and column_value > 0:
+        return -column_value
+    return value

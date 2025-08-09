@@ -7,9 +7,7 @@ class Role(Enum):
 
 class ColumnType(Enum):
     # Standard column types
-    DATE_Y = auto()
-    DATE_y = auto()
-    DATE_JEW = auto()
+    DATE = auto()
     STRING = auto()
     FLOAT = auto()
     SHEKEL = auto()

@@ -8,3 +8,4 @@ widgets/__pycache__/*
 utils/__pycache__/*
 custom_types/__pycache__/*
 observables/__pycache__/*
+.vscode
