@@ -1,13 +1,9 @@
 import csv
-from datetime import datetime
 from custom_types.Transaction import Transaction
 from utils.load_save_data import transactions_observable
-from utils.csv_definitions import ColumnType, Role, ColumnTypeParsers
+from utils.csv_definitions import Role
+from utils.csv_parser_functions import get_column_data, normalize
 import uuid
-import re
-
-def normalize(s):
-    return re.sub(r'\s+', ' ', s.strip())
 
 def loose_match_descriptions(a, b):
     a_norm = normalize(a)
@@ -18,10 +14,6 @@ def loose_match_descriptions(a, b):
         b_norm in a_norm
     )
 
-def get_column_data(value, column_type):
-    parser = ColumnTypeParsers[column_type]
-    return parser(value)
-
 def parse_csv_to_transactions(file_path, csv_definition):
     transactions = []
     data = list(transactions_observable.get_data().values())
@@ -31,82 +23,45 @@ def parse_csv_to_transactions(file_path, csv_definition):
         if csv_definition['hasHeaders']:
             next(csv_reader)
 
-        col_with_type_flag = next(
-            (col for col in csv_definition['columns'] if col['type'] == ColumnType.TYPE_FLAG),
-            None
-        )
-
-        col_with_currency = next(
-            (col for col in csv_definition['columns'] if col['type'] == ColumnType.CURRENCY_FLAG),
-            None
-        )
-
-        col_with_second_amount = next(
-            (col for col in csv_definition['columns'] if col['type'] == ColumnType.AMOUNT_SECOND),
-            None
-        )
-
-        has_other_currency = col_with_currency is not None
-        has_credit_debit_header = col_with_type_flag is not None
+        columns = csv_definition['columns']
+        meta = csv_definition['metadata']
 
         # Iterate through the rows of the CSV (excluding header)
         for row in csv_reader:
             # Create a dictionary to store parsed transaction data
             transaction_data = {}
-            for col_def in csv_definition['columns']:
+        
+            for role in Role:
+                col_def = columns[role]
+                meta_def = meta[role]
                 column_index = col_def['index']
                 column_type = col_def['type']
-                column_role = col_def['role']
+                column_role = role
                 invert = col_def['invert'] if 'invert' in col_def else False
                 value = row[column_index]
+                transaction_data['uuid'] = str(uuid.uuid4())
 
-                if column_role == Role.NO_ROLE:
-                    # Skip columns with no specific role
-                    # Also skip if it has amount second, it is handled in regular amount iteration
+                try:
+                    converted_value = get_column_data(value, column_type)
+                except ValueError:
+                    print(f"Error: Invalid value '{value}' for column type '{column_type}' in row: {row}")
                     continue
 
-                transaction_data['uuid'] = str(uuid.uuid4())
-                # Convert values based on the type defined in the csv_definition
-                if column_role == Role.DATE:
-                    try:
-                        converted_value = get_column_data(value, column_type)
-                        transaction_data['date'] = converted_value
-                    except ValueError:
-                        print(f"Error: Invalid date format in row: {row}")
-                        continue
-                elif column_role == Role.AMOUNT:
-                    # Convert to float (assuming it's a currency)
-                    try:
-                        converted_value = get_column_data(value, column_type)
-                        transaction_data['amount'] = converted_value
-                    except ValueError:
-                        print(f"Error: Invalid amount format in row: {row}")
-                        continue
+                if meta_def is not None and len(meta_def) > 0:   
+                    for meta_item in meta_def:
+                        meta_cols = meta_item['columns']
+                        handler = meta_item['handler']
+                        converted_value = handler(meta_cols, row, converted_value)
 
-                    if has_credit_debit_header:
-                        try:
-                            creditDebitHeaderIndex = col_with_type_flag['index']
-                            creditDebitHeaderValue = row[creditDebitHeaderIndex]
-                            if str(creditDebitHeaderValue).lower() == 'credit':
-                                transaction_data['amount'] = -transaction_data['amount']
-                        except ValueError:
-                            print(f"Error: Invalid credit/debit header format in row: {row}")
-                            continue
-                    
-                    if has_other_currency:
-                        currency_header_index = col_with_currency['index']
-                        currency_header_value = row[currency_header_index]
-                        # if the other currency column is provided and the amount exists, it will override the amount
-                        if str(currency_header_value) == '$' and col_with_second_amount:
-                            second_amount_value = row[col_with_second_amount['index']]
-                            converted_value = get_column_data(second_amount_value, col_with_second_amount['type'])
-                            transaction_data['amount'] = converted_value
-                    
-                    if invert:
-                        transaction_data['amount'] = -transaction_data['amount']
+                if invert:
+                        converted_value = -converted_value
+
+                if column_role == Role.DATE:
+                    transaction_data['date'] = converted_value
                 elif column_role == Role.DESCRIPTION:
-                    converted_value = get_column_data(value, column_type)
                     transaction_data['description'] = converted_value
+                elif column_role == Role.AMOUNT:
+                    transaction_data['amount'] = converted_value
 
             # Ensure that 'date', 'amount', and 'description' are present for the transaction
             if 'date' in transaction_data and 'amount' in transaction_data and 'description' in transaction_data:

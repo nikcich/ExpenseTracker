@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtCore import QRegExp, Qt
-from utils.csv_definitions import override_shekels_to_dollars_exchange
+from utils.csv_parser_functions import override_shekels_to_dollars_exchange
 
 class ShekelConversionWindow(QWidget):
     def __init__(self, parent=None):
