@@ -94,7 +94,6 @@ def parse_csv_to_transactions(file_path, csv_definition):
                             continue
                     
                     if has_other_currency:
-                        print("Found other currency!")
                         currency_header_index = col_with_currency['index']
                         currency_header_value = row[currency_header_index]
                         # if the other currency column is provided and the amount exists, it will override the amount
