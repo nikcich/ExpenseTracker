@@ -52,7 +52,7 @@ capital_csv_definition = {
     'columns': {
         Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 1},
         Role.DATE: {'type': ColumnType.DATE_y, 'index': 2},
-        Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 4, 'invert': True}
+        Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 4}
     },
     'metadata': {
         Role.DATE: [],
