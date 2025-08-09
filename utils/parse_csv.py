@@ -42,7 +42,7 @@ def parse_csv_to_transactions(file_path, csv_definition):
                 invert = col_def['invert'] if 'invert' in col_def else False
                 value = row[column_index]
 
-                if column_role == Role.NO_ROLE or column_role == Role.AMOUNT_SECOND:
+                if column_role == Role.NO_ROLE:
                     # Skip columns with no specific role
                     # Also skip if it has amount second, it is handled in regular amount iteration
                     continue
@@ -53,12 +53,12 @@ def parse_csv_to_transactions(file_path, csv_definition):
                 )
 
                 col_with_currency = next(
-                    (col for col in csv_definition['columns'] if col['role'] == Role.CURRENCY),
+                    (col for col in csv_definition['columns'] if col['type'] == ColumnType.CURRENCY_FLAG),
                     None
                 )
 
                 col_with_second_amount = next(
-                    (col for col in csv_definition['columns'] if col['role'] == Role.AMOUNT_SECOND),
+                    (col for col in csv_definition['columns'] if col['type'] == ColumnType.AMOUNT_SECOND),
                     None
                 )
 
@@ -94,6 +94,7 @@ def parse_csv_to_transactions(file_path, csv_definition):
                             continue
                     
                     if has_other_currency:
+                        print("Found other currency!")
                         currency_header_index = col_with_currency['index']
                         currency_header_value = row[currency_header_index]
                         # if the other currency column is provided and the amount exists, it will override the amount
