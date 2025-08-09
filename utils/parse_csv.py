@@ -1,15 +1,9 @@
 import csv
-from datetime import datetime
 from custom_types.Transaction import Transaction
 from utils.load_save_data import transactions_observable
 from utils.csv_definitions import Role
-from utils.csv_parser_functions import get_column_data
-
+from utils.csv_parser_functions import get_column_data, normalize
 import uuid
-import re
-
-def normalize(s):
-    return re.sub(r'\s+', ' ', s.strip())
 
 def loose_match_descriptions(a, b):
     a_norm = normalize(a)
