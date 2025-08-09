@@ -24,6 +24,8 @@ class ColumnType(Enum):
     STRING = auto()
     FLOAT = auto()
     TYPE_FLAG = auto()
+    AMOUNT_SECOND = auto()
+    CURRENCY_FLAG = auto()
     SHEKEL = auto()
 
 def parse_date_fmt(value, fmt):
@@ -75,7 +77,9 @@ ColumnTypeParsers = {
     ColumnType.FLOAT: parse_float,
     ColumnType.TYPE_FLAG: parse_flag,
     ColumnType.SHEKEL: parse_shekel,
-    ColumnType.DATE_JEW: parse_date_jew
+    ColumnType.DATE_JEW: parse_date_jew,
+    ColumnType.CURRENCY_FLAG: parse_string,
+    ColumnType.AMOUNT_SECOND: parse_float
 }
 
 wf_csv_definition = {
@@ -125,7 +129,9 @@ jewland_csv_definitions = {
     'columns': [
         {'type': ColumnType.DATE_JEW, 'index': 0, 'role': Role.DATE},  # Date (date format)
         {'type': ColumnType.STRING, 'index': 1, 'role': Role.DESCRIPTION},    # Description (string)
-        {'type': ColumnType.SHEKEL, 'index':  5, 'role': Role.AMOUNT} # Amount (float)
+        {'type': ColumnType.SHEKEL, 'index': 5, 'role': Role.AMOUNT}, # Amount (float)
+        {'type': ColumnType.AMOUNT_SECOND, 'index': 7, 'role': Role.NO_ROLE}, # Dollars if any
+        {'type': ColumnType.CURRENCY_FLAG, 'index': 8, 'role': Role.NO_ROLE} # Currency flag
     ]
 }
 
