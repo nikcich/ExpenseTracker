@@ -5,6 +5,7 @@ on: [push, pull_request, merge_group]
 
 jobs:
   test:
+    name: PyTest
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
