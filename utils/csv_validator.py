@@ -15,8 +15,6 @@ CANDIDATE_FORMATS = [
     {"%d-%m-%y" : 0}
 ]
 
-BEST_DATE_FMT = None # global variable in case needed in other functions
-
 # Function to validate data types (this can be expanded to include more types)
 def validate_data(value, column_type):
     try:
@@ -85,17 +83,9 @@ def validate_csv(file_path, csv_definition):
                     
                     if len(meta_def) > 0:
                         for meta_item in meta_def:
-                            value = get_column_data(row[column_index], column_type)
+                            value = get_column_data(row[column_index], col_def)
                             if not validate_metadata(meta_item, row, value):
                                 return False
-                
-                for date_formatter_candidate in CANDIDATE_FORMATS:
-                    if row_number == CANDIDATE_FORMATS[date_formatter_candidate]:
-                        # Found best date formatter! Can be validated
-                        BEST_DATE_FMT = CANDIDATE_FORMATS[date_formatter_candidate]
-                    else:
-                        # Cannot be validated since no matched date formatter is actually found
-                        return False 
                 
             return True
             

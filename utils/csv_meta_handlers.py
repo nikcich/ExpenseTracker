@@ -2,9 +2,8 @@ from utils.csv_parser_functions import get_column_data
 
 def get_column_value(column, row):
     column_index = column['index']
-    column_type = column['type']
     col_value = row[column_index]
-    converted_value = get_column_data(col_value, column_type)
+    converted_value = get_column_data(col_value, column)
 
     return converted_value
 

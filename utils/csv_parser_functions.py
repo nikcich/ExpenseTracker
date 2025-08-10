@@ -1,6 +1,5 @@
 from datetime import datetime
 import re
-from utils.csv_validator import BEST_DATE_FMT
 from utils.csv_type_enums import ColumnType
 
 SHEKEL_TO_DOLLARS_EXCHANGE = 3.5 # Default to 3.5
@@ -60,16 +59,12 @@ def parse_date_fmt(value, fmt):
     try:
         return datetime.strptime(value, fmt).strftime("%m/%d/%Y")
     except ValueError:
-        return None
+        raise ValueError(f"Date format not recognized: {value} {fmt}")
 
-def parse_date(value):
-    if BEST_DATE_FMT is not None:
-        parsed = parse_date_fmt(value, BEST_DATE_FMT)
-        if parsed is not None:
-            return parsed
-    raise ValueError(f"Date format not recognized: {value}")
+def parse_date(value, col_def):
+    return parse_date_fmt(value, col_def['format'])
     
-def parse_float(value):
+def parse_float(value, col_def):
     try:
         new_value = float(remove_currency_symbols(value).replace(',', '').strip())
     except ValueError:
@@ -77,7 +72,7 @@ def parse_float(value):
     return new_value
         
 
-def parse_shekel(value):
+def parse_shekel(value, col_def):
     try:
         new_value = float(remove_currency_symbols(value).replace(',', '').strip())
         new_value * SHEKEL_TO_DOLLARS_EXCHANGE
@@ -85,10 +80,10 @@ def parse_shekel(value):
         new_value = 0 # defaults to 0 if string parsing goes wrong/null
     return new_value
     
-def parse_string(value):
+def parse_string(value, col_def):
     return normalize(str(value))
 
-def parse_flag(value):
+def parse_flag(value, col_def):
     return normalize(str(value)).lower()
 
 ColumnTypeParsers = {
@@ -103,6 +98,6 @@ ColumnTypeParsers = {
     ColumnType.AMOUNT_SECOND: parse_float
 }
 
-def get_column_data(value, column_type):
-    parser = ColumnTypeParsers[column_type]
-    return parser(value)
+def get_column_data(value, column):
+    parser = ColumnTypeParsers[column['type']]
+    return parser(value, column)
