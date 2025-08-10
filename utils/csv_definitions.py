@@ -18,7 +18,7 @@ wf_csv_definition = {
 
 wf_activity_csv_definition = {
     'name': 'Wells Fargo Activity Report',
-    'hasHeaders': True,
+    'hasHeaders': False,
     'columns': {
         Role.DATE: {'type': ColumnType.DATE_Y, 'index': 0},
         Role.AMOUNT: {'type': ColumnType.FLOAT, 'index': 1, 'invert': True},
