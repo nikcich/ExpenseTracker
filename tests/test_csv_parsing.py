@@ -11,7 +11,7 @@ expected_transactions = [
 
 class TestParseCSVToTransactions(unittest.TestCase):
     def test_amex_csv_definition_parse(self):
-        file_path = './tests/amex_activity_example.csv'
+        file_path = './tests/mocks/good/amex_activity_example.csv'
 
         try:
             transactions = parse_csv_to_transactions(file_path, amex_csv_definition)
@@ -29,7 +29,7 @@ class TestParseCSVToTransactions(unittest.TestCase):
             self.assertEqual(et['amount'], t.amount)
 
     def test_wf_activity_csv_definition_parse(self):
-        file_path = './tests/wf_activity_example.csv'
+        file_path = './tests/mocks/good/wf_activity_example.csv'
 
         try:
             transactions = parse_csv_to_transactions(file_path, wf_activity_csv_definition)
@@ -47,7 +47,7 @@ class TestParseCSVToTransactions(unittest.TestCase):
             self.assertEqual(et['amount'], t.amount)
 
     def test_wf_spending_report_csv_definition_parse(self):
-        file_path = './tests/wf_spending_report_example.csv'
+        file_path = './tests/mocks/good/wf_spending_report_example.csv'
 
         try:
             transactions = parse_csv_to_transactions(file_path, wf_csv_definition)
