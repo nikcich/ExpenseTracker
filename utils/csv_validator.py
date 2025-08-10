@@ -91,7 +91,11 @@ def validate_csv(file_path, csv_definition):
                 
                 for date_formatter_candidate in CANDIDATE_FORMATS:
                     if row_number == CANDIDATE_FORMATS[date_formatter_candidate]:
+                        # Found best date formatter! Can be validated
                         BEST_DATE_FMT = CANDIDATE_FORMATS[date_formatter_candidate]
+                    else:
+                        # Cannot be validated since no matched date formatter is actually found
+                        return False 
                 
             return True
             
