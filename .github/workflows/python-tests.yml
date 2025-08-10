@@ -1,7 +1,7 @@
 # .github/workflows/python-tests.yml
 name: Python Tests
 
-on: [push, pull_request]
+on: [push, pull_request, merge_group]
 
 jobs:
   test:
