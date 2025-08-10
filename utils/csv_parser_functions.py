@@ -1,6 +1,6 @@
 from datetime import datetime
 import re
-from csv_validator import BEST_DATE_FMT
+from utils.csv_validator import BEST_DATE_FMT
 from utils.csv_type_enums import ColumnType
 
 SHEKEL_TO_DOLLARS_EXCHANGE = 3.5 # Default to 3.5
