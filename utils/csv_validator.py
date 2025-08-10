@@ -5,21 +5,12 @@ from utils.csv_parser_functions import ColumnTypeParsers
 from utils.csv_definitions import Role
 from utils.csv_parser_functions import get_column_data
 
-CANDIDATE_FORMATS = [
-    {"%d/%m/%Y" : 0},
-    {"%d/%m/%y" : 0},
-    {"%m/%d/%Y" : 0},
-    {"%m/%d/%y" : 0},
-    {"%Y-%m-%d" : 0},
-    {"%d-%m-%Y" : 0},
-    {"%d-%m-%y" : 0}
-]
-
 # Function to validate data types (this can be expanded to include more types)
-def validate_data(value, column_type):
+def validate_data(value, col_def):
     try:
+        column_type = col_def['type']
         parser = ColumnTypeParsers[column_type]
-        parser(value)
+        parser(value, col_def)
         return True
     except ValueError:
         return False
@@ -32,14 +23,6 @@ def validate_metadata(meta_def, row, value):
             return True
         except ValueError:
             return False
-        
-def find_best_date_formatter(element):
-    for fmt in CANDIDATE_FORMATS:
-        try:
-            datetime.strptime(element, fmt)
-            CANDIDATE_FORMATS[fmt] += 1
-        except ValueError:
-            pass
 
 # Generic CSV Validation function
 def validate_csv(file_path, csv_definition):
@@ -72,13 +55,7 @@ def validate_csv(file_path, csv_definition):
                     column_index = col_def['index']
                     column_type = col_def['type']
 
-                    # special handling for date is needed since not all csv files have same data formats
-                    # will need to compare against several candidates and validate after the loop is done
-                    if role == Role.DATE:
-                        find_best_date_formatter(row[column_index])
-                        continue
-
-                    if not validate_data(row[column_index], column_type):
+                    if not validate_data(row[column_index], col_def):
                         return False
                     
                     if len(meta_def) > 0:
