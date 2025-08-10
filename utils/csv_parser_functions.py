@@ -1,7 +1,7 @@
 from datetime import datetime
 import re
+from csv_validator import BEST_DATE_FMT
 from utils.csv_type_enums import ColumnType
-
 
 SHEKEL_TO_DOLLARS_EXCHANGE = 3.5 # Default to 3.5
 
@@ -63,18 +63,10 @@ def parse_date_fmt(value, fmt):
         return None
 
 def parse_date(value):
-    formats = [
-        "%m/%d/%Y",
-        "%m/%d/%y",
-        "%d-%m-%Y",
-        "%Y-%m-%d"
-    ]
-    
-    for fmt in formats:
-        parsed = parse_date_fmt(value, fmt)
+    if BEST_DATE_FMT is not None:
+        parsed = parse_date_fmt(value, BEST_DATE_FMT)
         if parsed is not None:
             return parsed
-    
     raise ValueError(f"Date format not recognized: {value}")
     
 def parse_float(value):

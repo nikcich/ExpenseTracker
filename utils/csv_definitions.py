@@ -86,8 +86,8 @@ capital_credit_csv_definition = {
     }
 }
 
-jewland_csv_definitions = {
-    'name': 'Bank Leumi Activity Report',
+jewland_credit_csv_definitions = {
+    'name': 'Max Credit Card Activity Report',
     'hasHeaders': True,
     'columns': {
         Role.DATE: {'type': ColumnType.DATE, 'index': 0 },
@@ -102,7 +102,29 @@ jewland_csv_definitions = {
                 'handler': amount_secondary_handler, 
                 'columns': [
                     {'type': ColumnType.AMOUNT_SECOND, 'index': 7},
-                    {'type': ColumnType.CURRENCY_FLAG, 'index': 8,}
+                    {'type': ColumnType.CURRENCY_FLAG, 'index': 8}
+                ]
+            }
+        ]
+    }
+}
+
+jewland_bank_csv_definitions = {
+    'name': 'Bank Leumi Activity Report',
+    'hasHeaders': True,
+    'columns': {
+        Role.DATE: {'type': ColumnType.DATE, 'index': 0 },
+        Role.DESCRIPTION: {'type': ColumnType.STRING, 'index': 1 },
+        Role.AMOUNT: {'type': ColumnType.SHEKEL, 'index': 3 }
+    },
+    'metadata': {
+        Role.DATE: [],
+        Role.DESCRIPTION: [],
+        Role.AMOUNT: [
+            { 
+                'handler': credit_column_handler, 
+                'columns': [
+                    {'type': ColumnType.FLOAT, 'index': 4},
                 ]
             }
         ]
@@ -110,4 +132,4 @@ jewland_csv_definitions = {
 }
 
 # Always add new definitions to this list
-all_csv_definitions = [wf_csv_definition, wf_activity_csv_definition, amex_csv_definition, capital_credit_csv_definition, capital_csv_definition, jewland_csv_definitions]
+all_csv_definitions = [wf_csv_definition, wf_activity_csv_definition, amex_csv_definition, capital_credit_csv_definition, capital_csv_definition, jewland_bank_csv_definitions, jewland_credit_csv_definitions]
