@@ -93,7 +93,7 @@ class TestParseCSVToTransactions(unittest.TestCase):
             self.assertEqual(et['description'], t.description)
             self.assertEqual(et['amount'], t.amount)
 
-    def test_wf_activity_csv_definition_validation_fail(self):
+    def test_wf_spending_report_csv_definition_validation_fail(self):
         file_paths = [
             './tests/mocks/bad/wf_spending_report_bad_example_1.csv',
             './tests/mocks/bad/wf_spending_report_bad_example_2.csv'
@@ -101,6 +101,7 @@ class TestParseCSVToTransactions(unittest.TestCase):
 
         for file_path in file_paths:
             result = validate_csv(file_path, wf_csv_definition)
+            print(file_path)
             self.assertEqual(result, False)
 
     #################################################################################

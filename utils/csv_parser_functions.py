@@ -2,8 +2,51 @@ from datetime import datetime
 import re
 from utils.csv_type_enums import ColumnType
 
-
 SHEKEL_TO_DOLLARS_EXCHANGE = 3.5 # Default to 3.5
+
+CURRENCY_SYMBOLS = [
+    "$",   # Dollar
+    "¢",   # Cent
+    "£",   # Pound
+    "¤",   # Generic currency sign
+    "¥",   # Yen / Yuan
+    "₠",   # Euro-currency
+    "₡",   # Colon
+    "₢",   # Cruzeiro
+    "₣",   # French Franc
+    "₤",   # Lira
+    "₥",   # Mill
+    "₦",   # Naira
+    "₧",   # Peseta
+    "₨",   # Rupee
+    "₩",   # Won
+    "₪",   # Shekel
+    "₫",   # Dong
+    "€",   # Euro
+    "₭",   # Kip
+    "₮",   # Tugrik
+    "₯",   # Drachma
+    "₰",   # German Penny
+    "₱",   # Peso
+    "₲",   # Guarani
+    "₳",   # Austral
+    "₴",   # Hryvnia
+    "₵",   # Cedi
+    "₶",   # Livre Tournois
+    "₷",   # Spesmilo
+    "₸",   # Tenge
+    "₺",   # Turkish Lira
+    "₻",   # Nordic Mark
+    "₼",   # Azerbaijani Manat
+    "₽",   # Russian Ruble
+    "₾",   # Georgian Lari
+    "₿"    # Bitcoin
+]
+
+CURRENCY_PATTERN = "[" + "".join(re.escape(sym) for sym in CURRENCY_SYMBOLS) + "]"
+
+def remove_currency_symbols(text):
+    return re.sub(CURRENCY_PATTERN, "", text)
 
 def override_shekels_to_dollars_exchange(value):
     global SHEKEL_TO_DOLLARS_EXCHANGE
@@ -16,58 +59,45 @@ def parse_date_fmt(value, fmt):
     try:
         return datetime.strptime(value, fmt).strftime("%m/%d/%Y")
     except ValueError:
-        raise ValueError()
+        raise ValueError(f"Date format not recognized: {value} {fmt}")
 
-def parse_date_Y(value):
-    try:
-        return parse_date_fmt(value, "%m/%d/%Y")
-    except ValueError:
-        raise ValueError("Invalid date format provided; Y")
-
-def parse_date_y(value):
-    try:
-        return parse_date_fmt(value, "%m/%d/%y")
-    except ValueError:
-        raise ValueError("Invalid date format provided; y")
-
-def parse_date_jew(value):
-    try:
-        return parse_date_fmt(value, "%d-%m-%Y")
-    except ValueError:
-        raise ValueError("Invalid date format provided; jew")
+def parse_date(value, col_def):
+    return parse_date_fmt(value, col_def['format'])
     
-def parse_float(value):
+def parse_float(value, col_def):
     try:
-        return float(value.replace('$', '').replace(',', '').strip())
+        new_value = float(remove_currency_symbols(value).replace(',', '').strip())
     except ValueError:
-        raise ValueError("Invalid amount provided")
+        new_value = 0 # default to 0 if string parsing goes wrong/null
+    return round(new_value, 2)
+        
 
-def parse_shekel(value):
+def parse_shekel(value, col_def):
     try:
-        return float(value.replace('$', '').replace(',', '').strip()) * SHEKEL_TO_DOLLARS_EXCHANGE
+        new_value = float(remove_currency_symbols(value).replace(',', '').strip())
+        new_value /= SHEKEL_TO_DOLLARS_EXCHANGE
     except ValueError:
-        raise ValueError("Invalid amount provided")
+        new_value = 0 # defaults to 0 if string parsing goes wrong/null
+    return round(new_value, 2)
     
-def parse_string(value):
+def parse_string(value, col_def):
     return normalize(str(value))
 
-def parse_flag(value):
+def parse_flag(value, col_def):
     return normalize(str(value)).lower()
 
 ColumnTypeParsers = {
     # Standard column types
-    ColumnType.DATE_Y: parse_date_Y,
-    ColumnType.DATE_y: parse_date_y,
+    ColumnType.DATE: parse_date,
     ColumnType.STRING: parse_string,
     ColumnType.FLOAT: parse_float,
     ColumnType.SHEKEL: parse_shekel,
-    ColumnType.DATE_JEW: parse_date_jew,
     # Metadata column types
     ColumnType.TYPE_FLAG: parse_flag,
     ColumnType.CURRENCY_FLAG: parse_string,
     ColumnType.AMOUNT_SECOND: parse_float
 }
 
-def get_column_data(value, column_type):
-    parser = ColumnTypeParsers[column_type]
-    return parser(value)
+def get_column_data(value, column):
+    parser = ColumnTypeParsers[column['type']]
+    return parser(value, column)

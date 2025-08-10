@@ -42,7 +42,7 @@ def parse_csv_to_transactions(file_path, csv_definition):
                 transaction_data['uuid'] = str(uuid.uuid4())
 
                 try:
-                    converted_value = get_column_data(value, column_type)
+                    converted_value = get_column_data(value, col_def)
                 except ValueError:
                     print(f"Error: Invalid value '{value}' for column type '{column_type}' in row: {row}")
                     continue

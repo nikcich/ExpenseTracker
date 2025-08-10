@@ -1,15 +1,16 @@
 # csv_validator.py
 import csv
+from datetime import datetime
 from utils.csv_parser_functions import ColumnTypeParsers
 from utils.csv_definitions import Role
 from utils.csv_parser_functions import get_column_data
 
-
 # Function to validate data types (this can be expanded to include more types)
-def validate_data(value, column_type):
+def validate_data(value, col_def):
     try:
+        column_type = col_def['type']
         parser = ColumnTypeParsers[column_type]
-        parser(value)
+        parser(value, col_def)
         return True
     except ValueError:
         return False
@@ -53,12 +54,13 @@ def validate_csv(file_path, csv_definition):
                         return False
                     column_index = col_def['index']
                     column_type = col_def['type']
-                    if not validate_data(row[column_index], column_type):
+
+                    if not validate_data(row[column_index], col_def):
                         return False
                     
                     if len(meta_def) > 0:
                         for meta_item in meta_def:
-                            value = get_column_data(row[column_index], column_type)
+                            value = get_column_data(row[column_index], col_def)
                             if not validate_metadata(meta_item, row, value):
                                 return False
                 

@@ -2,9 +2,8 @@ from utils.csv_parser_functions import get_column_data
 
 def get_column_value(column, row):
     column_index = column['index']
-    column_type = column['type']
     col_value = row[column_index]
-    converted_value = get_column_data(col_value, column_type)
+    converted_value = get_column_data(col_value, column)
 
     return converted_value
 
@@ -27,4 +26,10 @@ def amount_secondary_handler(meta_cols, row, value):
 
     if is_dollar:
         return amount_value
+    return value
+
+def credit_column_handler(meta_cols, row, value):
+    column_value = get_column_value(meta_cols[0], row)
+    if column_value is not None and isinstance(column_value, float) and column_value > 0:
+        return -column_value
     return value
