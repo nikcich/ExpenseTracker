@@ -69,16 +69,16 @@ def parse_float(value, col_def):
         new_value = float(remove_currency_symbols(value).replace(',', '').strip())
     except ValueError:
         new_value = 0 # default to 0 if string parsing goes wrong/null
-    return new_value
+    return round(new_value, 2)
         
 
 def parse_shekel(value, col_def):
     try:
         new_value = float(remove_currency_symbols(value).replace(',', '').strip())
-        new_value * SHEKEL_TO_DOLLARS_EXCHANGE
+        new_value /= SHEKEL_TO_DOLLARS_EXCHANGE
     except ValueError:
         new_value = 0 # defaults to 0 if string parsing goes wrong/null
-    return new_value
+    return round(new_value, 2)
     
 def parse_string(value, col_def):
     return normalize(str(value))

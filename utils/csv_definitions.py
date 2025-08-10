@@ -124,7 +124,7 @@ jewland_bank_csv_definitions = {
             { 
                 'handler': credit_column_handler, 
                 'columns': [
-                    {'type': ColumnType.FLOAT, 'index': 4},
+                    {'type': ColumnType.SHEKEL, 'index': 4},
                 ]
             }
         ]
